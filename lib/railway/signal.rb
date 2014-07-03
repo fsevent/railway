@@ -4,8 +4,8 @@ class Railway::Signal < FSEvent::AbstractDevice
     @interlocking_name = interlocking_name
     @status_name = status_name
 
-    # red: 0
-    # green: 1
+    # stop (red): 0
+    # proceed (green): 1
     @current_signal = [0, nil, nil]
   end
 
