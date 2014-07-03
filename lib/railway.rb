@@ -9,5 +9,7 @@ require 'railway/facilities'
 require 'railway/signal'
 require 'railway/switch'
 require 'railway/circuit'
+require 'railway/interlocking'
+require 'railway/panel'
 require 'railway/train'
 

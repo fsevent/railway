@@ -47,6 +47,13 @@ class Railway::Facilities
     }
   end
 
+  def add_area(segment, *areas)
+    if @area.has_key? segment
+      raise "area already defined for segment #{segment}"
+    end
+    @area[segment] = areas
+  end
+
   def add_route(signal, approach_segments, route_segments)
     if @route_segments.has_key? signal
       raise "route already defined: #{signal}"
