@@ -1,5 +1,7 @@
 require 'fsevent'
 
+require 'railway/valueid2'
+
 module Railway
 end
 
