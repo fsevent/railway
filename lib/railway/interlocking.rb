@@ -74,10 +74,6 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     end
   end
 
-  def signal_stable_stop?(route, watched_status)
-    watched_status[route][route][0] == 0 && watched_status[route][route][2] == true
-  end
-
   def route_lockable?(route, watched_status)
     lock_procs = []
     @facilities.route_segments[route].each {|segment|
@@ -162,6 +158,10 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       end
     end
     segments.empty?
+  end
+
+  def signal_stable_stop?(route, watched_status)
+    refer_closed_loop_status(route) == 0 && closed_loop_stable?(route)
   end
 
   def define_closed_loop_status(status_name, value, watchee_device_name, watchee_status_name)
