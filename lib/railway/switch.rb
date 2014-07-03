@@ -1,5 +1,5 @@
 class Railway::Switch < FSEvent::AbstractDevice
-  def initizlize(device_name, initial_position, interlocking_name, status_name)
+  def initialize(device_name, initial_position, interlocking_name, status_name)
     super(device_name)
     @interlocking_name = interlocking_name
     @status_name = status_name
@@ -8,12 +8,16 @@ class Railway::Switch < FSEvent::AbstractDevice
     # reverse position: 2
     # moving to normal position: -1
     # moving to reverse position: -2
-    @current_position = initial_position # should be 1 or 2
+
+    # initial_position should be 1 or 2
+
+    @current_position = [initial_position, nil, nil]
     @time_to_finish_moving = nil
   end
 
   def registered
-    define_status("position", @current_position)
+    define_status(@name, @current_position)
+    define_status("position", @current_position[0])
     add_watch(@interlocking_name, @status_name)
   end
 
@@ -22,17 +26,26 @@ class Railway::Switch < FSEvent::AbstractDevice
       if @framework.current_time < @time_to_finish_moving
         return
       else
-        @current_position = -@current_position
-        modify_status("position", @current_position)
+        modify_status(@name, @current_position)
+        modify_status("position", @current_position[0])
         @time_to_finish_moving = nil
       end
     end
     if watched_status[@interlocking_name].has_key?(@status_name)
       requested_position = watched_status[@interlocking_name][@status_name]
-      @current_position = -requested_position
-      modify_status("position", @current_position)
-      @time_to_finish_moving = @framework.current_time + 5
-      @schedule.merge_schedule [@time_to_finish_moving]
+      if requested_position[0] != nil && requested_position != @current_position
+        if requested_position[0] != @current_position[0]
+          @current_position = requested_position.dup
+          modify_status(@name, [-@current_position[0], nil, nil])
+          modify_status("position", -@current_position[0])
+          @time_to_finish_moving = @framework.current_time + 5
+          @schedule.merge_schedule [@time_to_finish_moving]
+        else
+          @current_position = requested_position.dup
+          modify_status(@name, @current_position)
+          modify_status("position", @current_position[0])
+        end
+      end
     end
     set_elapsed_time(0)
   end

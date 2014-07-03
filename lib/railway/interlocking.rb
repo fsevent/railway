@@ -20,7 +20,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       add_watch(switch, "position")
     }
     @facilities.switch.each_key {|switch|
-      add_watch(switch, "position")
+      add_watch(switch, switch)
       @switch_output[switch] = [nil, nil, nil]
       define_status(switch, @switch_output[switch])
     }
@@ -35,11 +35,13 @@ class Railway::Interlocking < FSEvent::AbstractDevice
   end
 
   def run(watched_status, changed_status)
+    update_output(@switch_output, watched_status)
+    update_output(@signal_output, watched_status)
     @facilities.route_segments.each_key {|signal|
       run_route(signal, watched_status, changed_status)
     }
-    update_output(@switch_output, "position", watched_status)
-    update_output(@signal_output, "signal", watched_status)
+    update_output(@switch_output, watched_status)
+    update_output(@signal_output, watched_status)
   end
 
   def run_route(route, watched_status, changed_status)
@@ -134,7 +136,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       when :track
         true
       when :switch
-        @switch_output[rail][2] && @switch_output[rail] == watched_status[rail]["position"]
+        @switch_output[rail][2] && @switch_output[rail] == watched_status[rail][rail]
       else
         raise "unexpected rail type: #{railtype} for #{rail.inspect}"
       end
@@ -179,7 +181,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     end
   end
 
-  def update_output(output, status_name, watched_status)
+  def update_output(output, watched_status)
     output.each_key {|key|
       output_position, output_id, output_stable = output[key]
       if watched_status.has_key?(key) && watched_status[key][key]
