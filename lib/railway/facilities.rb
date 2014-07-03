@@ -114,4 +114,30 @@ class Railway::Facilities
       raise "invalid switch segment: #{rail} : #{n1} #{n2}"
     end
   end
+
+  def each_track_segment
+    @track.each {|track_name, (n1, n2, _len)|
+      [ [n1, n2, track_name],
+        [n2, n1, track_name] ].each {|segment|
+        yield track_name, segment
+      }
+    }
+  end
+
+  def each_switch_segment
+    @switch.each {|switch_name, (tn, (bn1, _len1), (bn2, _len2))|
+      [ [tn, bn1, switch_name],
+        [tn, bn2, switch_name],
+        [bn1, tn, switch_name],
+        [bn2, tn, switch_name] ].each {|segment|
+        yield switch_name, segment
+      }
+    }
+  end
+
+  def each_segment(&block)
+    each_track_segment(&block)
+    each_switch_segment(&block)
+  end
+
 end

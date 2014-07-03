@@ -18,16 +18,9 @@ facilities.add_track "t10", "n10", "n11", 10
 facilities.add_route "r1", nil, [["n1", "n2", "t1"], ["n2", "n3", "t2"], ["n3", "n4", "t3"], ["n4", "n5", "s1"], ["n5", "n6", "t5"], ["n6", "n7", "t6"], ["n7", "n8", "t7"]]
 facilities.add_route "r2", nil, [["n1", "n2", "t1"], ["n2", "n3", "t2"], ["n3", "n4", "t3"], ["n4", "n8", "s1"], ["n8", "n9", "t8"], ["n9", "n10", "t9"], ["n10", "n11", "t10"]]
 
-
-facilities.track.each {|track_name, (n1, n2, _len)|
-  facilities.add_circuit "c#{track_name}", [n1, n2, track_name]
-  facilities.add_circuit "c#{track_name}", [n2, n1, track_name]
-}
-facilities.switch.each {|switch_name, (tn, (bn1, _len1), (bn2, _len2))|
-  facilities.add_circuit "c#{switch_name}", [tn, bn1, switch_name]
-  facilities.add_circuit "c#{switch_name}", [tn, bn2, switch_name]
-  facilities.add_circuit "c#{switch_name}", [bn1, tn, switch_name]
-  facilities.add_circuit "c#{switch_name}", [bn2, tn, switch_name]
+facilities.each_segment {|rail, segment|
+  facilities.add_circuit "c#{rail}", segment
+  facilities.add_area segment, rail
 }
 
 class GreenSignal < FSEvent::AbstractDevice

@@ -6,21 +6,9 @@ facilities.add_track "t1", "n1", "n2", 10
 
 facilities.add_route "r1", nil, [["n1", "n2", "t1"]]
 
-facilities.track.each {|track_name, (n1, n2, _len)|
-  [ [n1, n2, track_name],
-    [n2, n1, track_name] ].each {|segment|
-    facilities.add_circuit "c#{track_name}", segment
-    facilities.add_area segment, track_name
-  }
-}
-facilities.switch.each {|switch_name, (tn, (bn1, _len1), (bn2, _len2))|
-  [ [tn, bn1, switch_name],
-    [tn, bn2, switch_name],
-    [bn1, tn, switch_name],
-    [bn2, tn, switch_name] ].each {|segment|
-    facilities.add_circuit "c#{switch_name}", segment
-    facilities.add_area segment, switch_name
-  }
+facilities.each_segment {|rail, segment|
+  facilities.add_circuit "c#{rail}", segment
+  facilities.add_area segment, rail
 }
 
 t0 = Time.utc(2000)
