@@ -42,7 +42,7 @@ class Railway::Train < FSEvent::AbstractDevice
       if signal == 0
         return
       end
-      @rails_until_next_route = @facilities.route[next_route].dup
+      @rails_until_next_route = @facilities.route_segments[next_route].dup
       del_watch_signal(next_route)
       @plan.shift
       if !@plan.empty?
@@ -115,7 +115,7 @@ class Railway::Train < FSEvent::AbstractDevice
 
   def add_watch_route(route)
     add_watch("signal_#{route}", "signal", :schedule)
-    @facilities.route[route].each {|segment|
+    @facilities.route_segments[route].each {|segment|
       n1, n2, rail = segment
       case @facilities.railtype[rail]
       when :track

@@ -6,10 +6,11 @@ class Railway::Facilities
     @switch = {} # switch -> [trunk_node, [branch1_node, branch1_len], [branch2_node, branch2_len]]
     @circuit = {} # segment -> circuit
                   # segment = [n1,n2,track] | [n1,n2,switch]
-    @route = {} # signal -> [approach_circuits, route_segments]
+    @route_segments = {} # signal -> route_segments
+    @approach_segments = {} # signal -> approach_segments
     @area = {} # segment -> [area, ...]
   end
-  attr_reader :node, :railtype, :track, :switch, :circuit, :route, :area
+  attr_reader :node, :railtype, :track, :switch, :circuit, :route_segments, :approach_segments, :area
 
   def add_track(track, n1, n2, len)
     if @railtype.has_key? track
@@ -46,11 +47,12 @@ class Railway::Facilities
     }
   end
 
-  def add_route(signal, *segments)
-    if @route.has_key? signal
+  def add_route(signal, approach_segments, route_segments)
+    if @route_segments.has_key? signal
       raise "route already defined: #{signal}"
     end
-    @route[signal] = segments
+    @approach_segments[signal] = approach_segments
+    @route_segments[signal] = route_segments
   end
 
   def segment_len(segment)
