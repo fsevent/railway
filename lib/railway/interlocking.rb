@@ -6,8 +6,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @area_lock = {} # area -> nil | owner_route
     @switch_lock = {} # switch -> nil | [owner_route, ...]
 
-    @switch_output = {} # switch -> [position, id, stable]
-    @signal_output = {} # route -> [signal, id, stable]
+    @closed_loop_output = {} # status_name -> [value, id, stable]
 
     @route_state = {} # route -> state
                       # state = nil | :wait_allocation | :signaled | :entered | :wait_deallocation
@@ -21,13 +20,12 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     }
     @facilities.switch.each_key {|switch|
       add_watch(switch, switch)
-      @switch_output[switch] = [nil, nil, nil]
-      define_status(switch, @switch_output[switch])
+      define_closed_loop_status(switch, nil)
     }
     @facilities.route_segments.each_key {|signal|
       add_watch("panel", signal)
       add_watch(signal, signal)
-      define_status(signal, [0, nil, nil])
+      define_closed_loop_status(signal, 0)
     }
     @facilities.circuit.values.uniq.each {|circuit|
       add_watch("circuit", circuit)
@@ -35,13 +33,10 @@ class Railway::Interlocking < FSEvent::AbstractDevice
   end
 
   def run(watched_status, changed_status)
-    update_output(@switch_output, watched_status)
-    update_output(@signal_output, watched_status)
+    propagate_closed_loop_status(watched_status)
     @facilities.route_segments.each_key {|signal|
       run_route(signal, watched_status, changed_status)
     }
-    update_output(@switch_output, watched_status)
-    update_output(@signal_output, watched_status)
   end
 
   def run_route(route, watched_status, changed_status)
@@ -57,7 +52,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     end
     if @route_state[route] == :wait_allocation
       if route_allocated?(route, watched_status)
-        modify_signal_output(route, 1, watched_status)
+        modify_closed_loop_status(route, 1)
         @route_state[route] = :signaled
       end
     end
@@ -65,7 +60,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       if train_in_route?(route, watched_status)
         @route_state[route] = :entered
         @unlocked_rear_numsegments[route] = 0
-        modify_signal_output(route, 0, watched_status)
+        modify_closed_loop_status(route, 0)
       end
     end
     if @route_state[route] == :entered
@@ -98,11 +93,10 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       case railtype
       when :track
       when :switch
-        unless watched_status.has_key?(rail) && watched_status[rail]["position"]
+        unless watched_status.has_key?(rail) && watched_status[rail][rail]
           return nil
         end
-        input_position, input_id, input_stable = watched_status[rail]["position"]
-        output_position, output_id, output_stable = @switch_output[rail]
+        output_position = refer_closed_loop_status(rail)
         desired_position = @facilities.switch_position(rail, n1, n2)
         if @switch_lock[rail] == nil || @switch_lock[rail].empty?
           lock_procs << lambda {
@@ -110,8 +104,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
           }
           if output_position != desired_position
             lock_procs << lambda {
-              @switch_output[rail] = [desired_position, nil, nil]
-              modify_status(rail, @switch_output[rail])
+              modify_closed_loop_status(rail, desired_position)
             }
           end
         elsif output_position == desired_position
@@ -136,7 +129,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       when :track
         true
       when :switch
-        @switch_output[rail][2] && @switch_output[rail] == watched_status[rail][rail]
+        closed_loop_stable?(rail, watched_status)
       else
         raise "unexpected rail type: #{railtype} for #{rail.inspect}"
       end
@@ -172,23 +165,34 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     segments.empty?
   end
 
-  def modify_signal_output(route, desired_signal, watched_status)
-    input_signal, input_id, input_stable = watched_status[route]["signal"]
-    output_signal, output_id, output_stable = @signal_output[route]
-    if output_signal != desired_signal
-      @signal_output[route] = [desired_signal, nil, nil]
-      modify_status(route, @signal_output[route])
+  def define_closed_loop_status(status_name, value)
+    @closed_loop_output[status_name] = [value, nil, nil]
+    define_status(status_name, @closed_loop_output[status_name])
+  end
+
+  def modify_closed_loop_status(status_name, value)
+    if @closed_loop_output[status_name][0] != value
+      @closed_loop_output[status_name] = [value, nil, nil]
+      modify_status(status_name, @closed_loop_output[status_name])
     end
   end
 
-  def update_output(output, watched_status)
-    output.each_key {|key|
-      output_position, output_id, output_stable = output[key]
+  def refer_closed_loop_status(status_name)
+    @closed_loop_output[status_name][0]
+  end
+
+  def closed_loop_stable?(key, watched_status)
+    @closed_loop_output[key][2] && @closed_loop_output[key] == watched_status[key][key]
+  end
+
+  def propagate_closed_loop_status(watched_status)
+    @closed_loop_output.each_key {|key|
+      output_position, output_id, output_stable = @closed_loop_output[key]
       if watched_status.has_key?(key) && watched_status[key][key]
         input_position, input_id, input_stable = watched_status[key][key]
         if input_position == output_position
-          output[key] = [output_position, input_id, input_stable]
-          modify_status(key, output[key])
+          @closed_loop_output[key] = [output_position, input_id, input_stable]
+          modify_status(key, @closed_loop_output[key])
         end
       end
     }
