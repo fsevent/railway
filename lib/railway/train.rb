@@ -33,7 +33,7 @@ class Railway::Train < FSEvent::AbstractDevice
         return
       end
       next_route = @plan.first
-      signal_device = "signal_#{next_route}"
+      signal_device = next_route
       if !watched_status.has_key?(signal_device) ||
          !watched_status[signal_device].has_key?("signal")
         return
@@ -77,15 +77,15 @@ class Railway::Train < FSEvent::AbstractDevice
       when :track
         # no moving parts for a track.
       when :switch
-        unless watched_status.has_key? "switch_#{rail}"
-          raise "no switch device defined: switch_#{rail}"
+        unless watched_status.has_key? rail
+          raise "no switch device defined: switch #{rail}"
         end
-        unless watched_status["switch_#{rail}"].has_key? "position"
-          raise "no switch position status defined: switch_#{rail}"
+        unless watched_status[rail].has_key? "position"
+          raise "no switch position status defined: switch #{rail}"
         end
         expected_switch_position = @facilities.switch_position(rail, n1, n2)
-        if watched_status["switch_#{rail}"]["position"] != expected_switch_position
-          raise "derailment occur: #{rail} should be position #{expected_switch_position} but #{watched_status["switch_#{rail}"]["position"]}"
+        if watched_status[rail]["position"] != expected_switch_position
+          raise "derailment occur: #{rail} should be position #{expected_switch_position} but #{watched_status[rail]["position"]}"
         end
       else
         raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
@@ -114,14 +114,14 @@ class Railway::Train < FSEvent::AbstractDevice
   end
 
   def add_watch_route(route)
-    add_watch("signal_#{route}", "signal", :schedule)
+    add_watch(route, "signal", :schedule)
     @facilities.route_segments[route].each {|segment|
       n1, n2, rail = segment
       case @facilities.railtype[rail]
       when :track
         # no moving parts for a track.
       when :switch
-        add_watch("switch_#{rail}", "position", :immediate) # :immediate to detect derailments immediately.
+        add_watch(rail, "position", :immediate) # :immediate to detect derailments immediately.
       else
         raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
       end
@@ -129,7 +129,7 @@ class Railway::Train < FSEvent::AbstractDevice
   end
 
   def del_watch_signal(route)
-    del_watch("signal_#{route}", "signal")
+    del_watch(route, "signal")
   end
 
   def del_watch_segment(segment)
@@ -138,7 +138,7 @@ class Railway::Train < FSEvent::AbstractDevice
     when :track
       # no moving parts for a track.
     when :switch
-      del_watch("switch_#{rail}", "position")
+      del_watch(rail, "position")
     else
       raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
     end
