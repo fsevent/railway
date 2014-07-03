@@ -129,7 +129,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       when :track
         true
       when :switch
-        closed_loop_stable?(rail, watched_status)
+        closed_loop_stable?(rail)
       else
         raise "unexpected rail type: #{railtype} for #{rail.inspect}"
       end
@@ -181,18 +181,22 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @closed_loop_output[status_name][0]
   end
 
-  def closed_loop_stable?(key, watched_status)
-    @closed_loop_output[key][2] && @closed_loop_output[key] == watched_status[key][key]
+  def closed_loop_stable?(key)
+    @closed_loop_output[key][2]
   end
 
   def propagate_closed_loop_status(watched_status)
     @closed_loop_output.each_key {|key|
-      output_position, output_id, output_stable = @closed_loop_output[key]
       if watched_status.has_key?(key) && watched_status[key][key]
-        input_position, input_id, input_stable = watched_status[key][key]
-        if input_position == output_position
-          @closed_loop_output[key] = [output_position, input_id, input_stable]
-          modify_status(key, @closed_loop_output[key])
+        input_tuple = watched_status[key][key]
+        output_tuple = @closed_loop_output[key]
+        if input_tuple != output_tuple
+          input_value, = input_tuple
+          output_value, = output_tuple
+          if input_value == output_value
+            @closed_loop_output[key] = input_tuple
+            modify_status(key, @closed_loop_output[key])
+          end
         end
       end
     }
