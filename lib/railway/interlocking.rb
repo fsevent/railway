@@ -6,6 +6,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @area_lock = {} # area -> nil | owner_route
     @switch_lock = {} # switch -> nil | [owner_route, ...]
 
+    @closed_loop_watch = {} # status_name -> [watchee_device_name, watchee_status_name]
     @closed_loop_output = {} # status_name -> [value, id, stable]
 
     @route_state = {} # route -> state
@@ -19,13 +20,11 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       add_watch(switch, "position")
     }
     @facilities.switch.each_key {|switch|
-      add_watch(switch, switch)
-      define_closed_loop_status(switch, nil)
+      define_closed_loop_status(switch, nil, switch, switch)
     }
     @facilities.route_segments.each_key {|signal|
       add_watch("panel", signal)
-      add_watch(signal, signal)
-      define_closed_loop_status(signal, 0)
+      define_closed_loop_status(signal, 0, signal, signal)
     }
     @facilities.circuit.values.uniq.each {|circuit|
       add_watch("circuit", circuit)
@@ -165,8 +164,10 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     segments.empty?
   end
 
-  def define_closed_loop_status(status_name, value)
+  def define_closed_loop_status(status_name, value, watchee_device_name, watchee_status_name)
+    @closed_loop_watch[status_name] = [watchee_device_name, watchee_status_name]
     @closed_loop_output[status_name] = [value, nil, nil]
+    add_watch(watchee_device_name, watchee_status_name)
     define_status(status_name, @closed_loop_output[status_name])
   end
 
@@ -181,21 +182,21 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @closed_loop_output[status_name][0]
   end
 
-  def closed_loop_stable?(key)
-    @closed_loop_output[key][2]
+  def closed_loop_stable?(status_name)
+    @closed_loop_output[status_name][2]
   end
 
   def propagate_closed_loop_status(watched_status)
-    @closed_loop_output.each_key {|key|
-      if watched_status.has_key?(key) && watched_status[key][key]
-        input_tuple = watched_status[key][key]
-        output_tuple = @closed_loop_output[key]
+    @closed_loop_watch.each {|status_name, (watchee_device_name, watchee_status_name)|
+      if watched_status.has_key?(watchee_device_name) && watched_status[watchee_device_name][watchee_status_name]
+        input_tuple = watched_status[watchee_device_name][watchee_status_name]
+        output_tuple = @closed_loop_output[status_name]
         if input_tuple != output_tuple
           input_value, = input_tuple
           output_value, = output_tuple
           if input_value == output_value
-            @closed_loop_output[key] = input_tuple
-            modify_status(key, @closed_loop_output[key])
+            @closed_loop_output[status_name] = input_tuple
+            modify_status(status_name, @closed_loop_output[status_name])
           end
         end
       end
