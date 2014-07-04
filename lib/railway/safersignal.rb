@@ -22,7 +22,7 @@ class Railway::SaferSignal < FSEvent::AbstractDevice
       safest_input_device = @input_device_names.min_by {|input_device_name| watched_status[input_device_name][@status_name][0] }
       output = watched_status[safest_input_device][@status_name]
       if output != @output
-        @output = output 
+        @output = output
         modify_status(@status_name, @output)
       end
     end
