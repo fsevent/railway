@@ -1,6 +1,7 @@
 class Railway::Dumper < FSEvent::AbstractDevice
-  def initialize(device_name="railwaydumper")
-    super
+  def initialize(device_name="railwaydumper", show_failsafe:false)
+    super device_name
+    @show_failsafe = show_failsafe
   end
 
   def registered
@@ -12,6 +13,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
     route = {}
     point = []
     train = []
+    interlocking = {}
     watched_status.each {|device_name, h|
       next if @name == device_name
       case device_name
@@ -32,6 +34,13 @@ class Railway::Dumper < FSEvent::AbstractDevice
         if !position.empty?
           train << [device_name, position[0][0], position[-1][1]]
         end
+      when /\Ainterlocking/
+        h.each {|status_name, value|
+          if /\A[rp]/ =~ status_name
+            interlocking[status_name] ||= {}
+            interlocking[status_name][device_name] = value
+          end
+        }
       end
     }
     #p route
@@ -40,10 +49,12 @@ class Railway::Dumper < FSEvent::AbstractDevice
     str = @framework.current_time.to_s
     route.keys.sort.each {|route_name|
       signal, lever = route[route_name]
-      if signal == lever
-        str << " #{route_name}:#{signal}"
-      else
-        str << " #{route_name}:#{signal}(#{lever})"
+      str << " #{route_name}:#{signal}"
+      if @show_failsafe
+        str << "[" << interlocking[route_name].keys.sort.map {|device_name| interlocking[route_name][device_name][0] }.join(",") << "]"
+      end
+      if signal != lever
+        str << "(#{lever})"
       end
     }
     point.each {|device_name, position| str << " #{device_name}:#{position}" }
