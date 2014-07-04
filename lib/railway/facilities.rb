@@ -8,9 +8,12 @@ class Railway::Facilities
                   # segment = [n1,n2,track] | [n1,n2,point]
     @route_segments = {} # signal -> route_segments
     @approach_segments = {} # signal -> approach_segments
+    @approach_timer = Hash.new { @approach_default_timer } # signal -> seconds
+    @approach_default_timer = 90 # seconds
     @area = {} # segment -> [area, ...]
   end
   attr_reader :node, :railtype, :track, :point, :circuit, :route_segments, :approach_segments, :area
+  attr_reader :approach_timer
 
   def add_track(track, n1, n2, len)
     if @railtype.has_key? track
@@ -60,6 +63,14 @@ class Railway::Facilities
     end
     @approach_segments[signal] = approach_segments
     @route_segments[signal] = route_segments
+  end
+
+  def add_approach_timer(signal, seconds)
+    @approach_timer[signal] = seconds
+  end
+
+  def set_approach_default_timer(seconds)
+    @approach_default_timer = seconds
   end
 
   def segment_len(segment)

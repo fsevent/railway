@@ -11,6 +11,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
 
     @route_state = {} # route -> state
                       # state = nil | :wait_allocation | :signaled | :entered | :wait_deallocation
+    @route_schedule = {}
 
     @unlocked_rear_numsegments = {} # route -> integer
   end
@@ -50,16 +51,35 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       end
     end
     if @route_state[route] == :wait_allocation
-      if route_allocated?(route, watched_status)
-        modify_closed_loop_status(route, 1)
-        @route_state[route] = :signaled
+      if lever
+        if route_allocated?(route, watched_status)
+          modify_closed_loop_status(route, 1)
+          @route_state[route] = :signaled
+        end
+      else
+        route_unlock(route)
+        modify_closed_loop_status(route, 0)
+        @route_state[route] = nil
       end
     end
     if @route_state[route] == :signaled
-      if train_in_route?(route, watched_status)
-        @route_state[route] = :entered
-        @unlocked_rear_numsegments[route] = 0
-        modify_closed_loop_status(route, 0)
+      if lever
+        if train_in_route?(route, watched_status)
+          @route_state[route] = :entered
+          @unlocked_rear_numsegments[route] = 0
+          modify_closed_loop_status(route, 0)
+        end
+      else
+        if train_may_enter_route?(route, watched_status)
+          modify_closed_loop_status(route, 0)
+          @route_state[route] = :wait_approaching_train_stop
+          @route_schedule[route] = @framework.current_time + @facilities.approach_timer[route]
+          @schedule.merge_schedule [@route_schedule[route]]
+        else
+          route_unlock(route)
+          modify_closed_loop_status(route, 0)
+          @route_state[route] = nil
+        end
       end
     end
     if @route_state[route] == :entered
@@ -70,6 +90,13 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     if @route_state[route] == :wait_deallocation
       if signal_stable_stop?(route, watched_status)
         @route_state[route] = nil
+      end
+    end
+    if @route_state[route] == :wait_approaching_train_stop
+      if @route_schedule[route] <= @framework.current_time
+        route_unlock(route)
+        @route_state[route] = nil
+        @route_schedule.delete route
       end
     end
   end
@@ -116,6 +143,30 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     return lock_procs
   end
 
+  def route_unlock(route)
+    lock_procs = []
+    @facilities.route_segments[route].each {|segment|
+      @facilities.area[segment].each {|area|
+        if @area_lock[area] != route
+          raise "try to unlock area, #{area.inspect}, not locked by #{route}"
+        end
+        @area_lock[area] = nil
+      }
+      n1, n2, rail = segment
+      railtype = @facilities.railtype[rail]
+      case railtype
+      when :track
+      when :point
+        if @point_lock[rail] == nil || !@point_lock[rail].include?(route)
+          raise "try to unlock point, #{rail.inspect}, not locked by #{route}"
+        end
+        @point_lock[rail].delete route
+      else
+        raise "unexpected rail type: #{railtype} for #{rail.inspect}"
+      end
+    }
+  end
+
   def route_allocated?(route, watched_status)
     @facilities.route_segments[route].all? {|segment|
       n1, n2, rail = segment
@@ -128,6 +179,16 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       else
         raise "unexpected rail type: #{railtype} for #{rail.inspect}"
       end
+    }
+  end
+
+  def train_may_enter_route?(route, watched_status)
+    unless @facilities.approach_segments[route]
+      return true # Assume a train approaching if no track circuit to detect the train.
+    end
+    @facilities.approach_segments[route].any? {|segment|
+      circuit = @facilities.circuit[segment]
+      watched_status["circuit"][circuit]
     }
   end
 
