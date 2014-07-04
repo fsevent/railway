@@ -56,22 +56,17 @@ fse.register_device(Railway::Dumper.new)
 fse.register_device(Railway::Panel.new("panel", facilities, panel_plan))
 fse.register_device(Railway::Interlocking.new("interlocking1", facilities))
 fse.register_device(Railway::Circuit.new("circuit", facilities))
-fse.register_device(FSEvent::ValueIdDevice2.new("vp1", "interlocking1", "p1"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vp2", "interlocking1", "p2"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vr1", "interlocking1", "r1"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vr2", "interlocking1", "r2"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vr4", "interlocking1", "r4"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vr5", "interlocking1", "r5"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vr6", "interlocking1", "r6"))
-fse.register_device(FSEvent::ValueIdDevice2.new("vr8", "interlocking1", "r8"))
-fse.register_device(Railway::Point.new("p1", 1, "vp1", "p1"))
-fse.register_device(Railway::Point.new("p2", 1, "vp2", "p2"))
-fse.register_device(Railway::FixedSignal.new("r1", "vr1", "r1"))
-fse.register_device(Railway::FixedSignal.new("r2", "vr2", "r2"))
-fse.register_device(Railway::FixedSignal.new("r4", "vr4", "r4"))
-fse.register_device(Railway::FixedSignal.new("r5", "vr5", "r5"))
-fse.register_device(Railway::FixedSignal.new("r6", "vr6", "r6"))
-fse.register_device(Railway::FixedSignal.new("r8", "vr8", "r8"))
+
+facilities.point.each_key {|point|
+  fse.register_device(FSEvent::ValueIdDevice2.new("v#{point}", "interlocking1", point))
+  fse.register_device(Railway::Point.new(point, 1, "v#{point}", point))
+}
+
+facilities.route_segments.each_key {|route|
+  fse.register_device(FSEvent::ValueIdDevice2.new("v#{route}", "interlocking1", route))
+  fse.register_device(Railway::FixedSignal.new(route, "v#{route}", route))
+}
+
 fse.register_device(Railway::Train.new("train1", 15, ["r1", "r2", "r4"], facilities))
 fse.register_device(Railway::Train.new("train2", 15, ["r5", "r6", "r8"], facilities))
 
