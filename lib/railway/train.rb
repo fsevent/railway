@@ -21,7 +21,7 @@ class Railway::Train < FSEvent::AbstractDevice
 
   def run(watched_status, changed_status)
     #p [@framework.current_time, @current_position, watched_status, changed_status]
-    p [@framework.current_time, @current_position, watched_status]
+    #p [@framework.current_time, @name, @current_position, watched_status]
     if @rails_until_next_route.empty?
       if @plan.empty?
         if !@current_position.empty?
@@ -40,6 +40,8 @@ class Railway::Train < FSEvent::AbstractDevice
       end
       signal = watched_status[signal_device]["signal"]
       if signal == 0
+        clear_rear
+        modify_status "position", @current_position.dup
         return
       end
       @rails_until_next_route = @facilities.route_segments[next_route].dup
