@@ -57,8 +57,15 @@ class Railway::Dumper < FSEvent::AbstractDevice
         str << "(#{lever})"
       end
     }
-    point.each {|device_name, position| str << " #{device_name}:#{position}" }
-    train.each {|device_name, pos1, pos2| str << " #{device_name}:#{pos1}-#{pos2}" }
+    point.each {|point_name, position|
+      str << " #{point_name}:#{position}"
+      if @show_failsafe
+        str << "[" << interlocking[point_name].keys.sort.map {|device_name| interlocking[point_name][device_name][0] }.join(",") << "]"
+      end
+    }
+    train.each {|device_name, pos1, pos2|
+      str << " #{device_name}:#{pos1}-#{pos2}"
+    }
     puts str
     set_elapsed_time(0)
   end
