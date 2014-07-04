@@ -6,6 +6,7 @@ module Railway
 end
 
 require 'railway/facilities'
+require 'railway/dumper'
 require 'railway/fixedsignal'
 require 'railway/switch'
 require 'railway/circuit'
