@@ -1,16 +1,16 @@
 class Railway::Facilities
   def initialize
     @node = {} # node -> [rail, ...]
-    @railtype = {} # rail -> :track | :switch
+    @railtype = {} # rail -> :track | :point
     @track = {} # track -> [node, node, len]
-    @switch = {} # switch -> [trunk_node, [branch1_node, branch1_len], [branch2_node, branch2_len]]
+    @point = {} # point -> [trunk_node, [branch1_node, branch1_len], [branch2_node, branch2_len]]
     @circuit = {} # segment -> circuit
-                  # segment = [n1,n2,track] | [n1,n2,switch]
+                  # segment = [n1,n2,track] | [n1,n2,point]
     @route_segments = {} # signal -> route_segments
     @approach_segments = {} # signal -> approach_segments
     @area = {} # segment -> [area, ...]
   end
-  attr_reader :node, :railtype, :track, :switch, :circuit, :route_segments, :approach_segments, :area
+  attr_reader :node, :railtype, :track, :point, :circuit, :route_segments, :approach_segments, :area
 
   def add_track(track, n1, n2, len)
     if @railtype.has_key? track
@@ -24,17 +24,17 @@ class Railway::Facilities
     }
   end
 
-  def add_switch(switch, trunk_node, branch1_node_len, branch2_node_len)
-    if @railtype.has_key? switch
-      raise "rail already defined: #{switch}"
+  def add_point(point, trunk_node, branch1_node_len, branch2_node_len)
+    if @railtype.has_key? point
+      raise "rail already defined: #{point}"
     end
     branch1_node, branch1_len = branch1_node_len
     branch2_node, branch2_len = branch2_node_len
-    @railtype[switch] = :switch
-    @switch[switch] = [trunk_node, branch1_node_len, branch2_node_len]
+    @railtype[point] = :point
+    @point[point] = [trunk_node, branch1_node_len, branch2_node_len]
     [trunk_node, branch1_node, branch2_node].each {|n|
       @node[n] ||= []
-      @node[n] << switch
+      @node[n] << point
     }
   end
 
@@ -72,15 +72,15 @@ class Railway::Facilities
         raise "invalid track segment: #{rail} : #{n1} #{n2}"
       end
       return track_len
-    when :switch
-      trunk_node, branch1_node_len, branch2_node_len = @switch[rail]
+    when :point
+      trunk_node, branch1_node_len, branch2_node_len = @point[rail]
       branch1_node, branch1_len = branch1_node_len
       branch2_node, branch2_len = branch2_node_len
       unless [[trunk_node, branch1_node],
               [trunk_node, branch2_node],
               [branch1_node, trunk_node],
               [branch2_node, trunk_node]].include? [n1, n2]
-        raise "invalid switch segment: #{rail} : #{n1} #{n2}"
+        raise "invalid point segment: #{rail} : #{n1} #{n2}"
       end
       if n1 == trunk_node
         return n2 == branch1_node ? branch1_len : branch2_len
@@ -100,8 +100,8 @@ class Railway::Facilities
     len
   end
 
-  def switch_position(switch, n1, n2)
-    trunk_node, branch1_node_len, branch2_node_len = @switch[switch]
+  def point_position(point, n1, n2)
+    trunk_node, branch1_node_len, branch2_node_len = @point[point]
     branch1_node, branch1_len = branch1_node_len
     branch2_node, branch2_len = branch2_node_len
     if [[trunk_node, branch1_node],
@@ -111,7 +111,7 @@ class Railway::Facilities
            [branch2_node, trunk_node]].include? [n1, n2]
       return 2
     else
-      raise "invalid switch segment: #{rail} : #{n1} #{n2}"
+      raise "invalid point segment: #{rail} : #{n1} #{n2}"
     end
   end
 
@@ -124,20 +124,20 @@ class Railway::Facilities
     }
   end
 
-  def each_switch_segment
-    @switch.each {|switch_name, (tn, (bn1, _len1), (bn2, _len2))|
-      [ [tn, bn1, switch_name],
-        [tn, bn2, switch_name],
-        [bn1, tn, switch_name],
-        [bn2, tn, switch_name] ].each {|segment|
-        yield switch_name, segment
+  def each_point_segment
+    @point.each {|point_name, (tn, (bn1, _len1), (bn2, _len2))|
+      [ [tn, bn1, point_name],
+        [tn, bn2, point_name],
+        [bn1, tn, point_name],
+        [bn2, tn, point_name] ].each {|segment|
+        yield point_name, segment
       }
     }
   end
 
   def each_segment(&block)
     each_track_segment(&block)
-    each_switch_segment(&block)
+    each_point_segment(&block)
   end
 
 end

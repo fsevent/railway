@@ -78,16 +78,16 @@ class Railway::Train < FSEvent::AbstractDevice
       case @facilities.railtype[rail]
       when :track
         # no moving parts for a track.
-      when :switch
+      when :point
         unless watched_status.has_key? rail
-          raise "no switch device defined: switch #{rail}"
+          raise "no point device defined: point #{rail}"
         end
         unless watched_status[rail].has_key? "position"
-          raise "no switch position status defined: switch #{rail}"
+          raise "no point position status defined: point #{rail}"
         end
-        expected_switch_position = @facilities.switch_position(rail, n1, n2)
-        if watched_status[rail]["position"] != expected_switch_position
-          raise "derailment occur: #{rail} should be position #{expected_switch_position} but #{watched_status[rail]["position"]}"
+        expected_point_position = @facilities.point_position(rail, n1, n2)
+        if watched_status[rail]["position"] != expected_point_position
+          raise "derailment occur: #{rail} should be position #{expected_point_position} but #{watched_status[rail]["position"]}"
         end
       else
         raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
@@ -122,7 +122,7 @@ class Railway::Train < FSEvent::AbstractDevice
       case @facilities.railtype[rail]
       when :track
         # no moving parts for a track.
-      when :switch
+      when :point
         add_watch(rail, "position", :immediate) # :immediate to detect derailments immediately.
       else
         raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
@@ -139,7 +139,7 @@ class Railway::Train < FSEvent::AbstractDevice
     case @facilities.railtype[rail]
     when :track
       # no moving parts for a track.
-    when :switch
+    when :point
       del_watch(rail, "position")
     else
       raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"

@@ -5,7 +5,7 @@ facilities.add_track "t1", "n1", "n2", 10
 facilities.add_track "t2", "n2", "n3", 10
 facilities.add_track "t3", "n3", "n4", 10
 
-facilities.add_switch "s1", "n4", ["n5", 5], ["n8", 5]
+facilities.add_point "s1", "n4", ["n5", 5], ["n8", 5]
 
 facilities.add_track "t5", "n5", "n6", 10
 facilities.add_track "t6", "n6", "n7", 10
@@ -32,7 +32,7 @@ class GreenSignal < FSEvent::AbstractDevice
   end
 end
 
-class FixedSwitch < FSEvent::AbstractDevice
+class FixedPoint < FSEvent::AbstractDevice
   def initialize(device_name, position)
     super device_name
     @position = position
@@ -72,7 +72,7 @@ class ScheduledSignal < FSEvent::AbstractDevice
   end
 end
 
-class RawScheduledSwitch < FSEvent::AbstractDevice
+class RawScheduledPoint < FSEvent::AbstractDevice
   def initialize(device_name, plan)
     super device_name
     @plan = plan.dup
@@ -98,7 +98,7 @@ class RawScheduledSwitch < FSEvent::AbstractDevice
   end
 end
 
-class ScheduledSwitch < RawScheduledSwitch
+class ScheduledPoint < RawScheduledPoint
   def initialize(device_name, plan)
     raw_plan = []
     first = true
@@ -106,12 +106,12 @@ class ScheduledSwitch < RawScheduledSwitch
       if first
         first = false
       else
-        raw_plan << [t-5, -pos] # switch position movement needs 5 seconds
+        raw_plan << [t-5, -pos] # point position movement needs 5 seconds
       end
       raw_plan << [t, pos]
     }
     if raw_plan.map {|t,pos| t } != raw_plan.map {|t, pos| t }.sort
-      raise "not enough interval to change switch position"
+      raise "not enough interval to change point position"
     end
     super device_name, raw_plan
   end
@@ -124,7 +124,7 @@ fse = FSEvent.new(t0)
 fse.register_device(train = Railway::Train.new("train1", 15, ["r2"], facilities))
 fse.register_device(Railway::Circuit.new("circuit", facilities))
 fse.register_device(ScheduledSignal.new("r2", [[t0, 0], [t0+7, 1], [t0+13,0]]))
-fse.register_device(ScheduledSwitch.new("s1", [[t0, 1], [t0+6, 2], [t0+30,1]]))
+fse.register_device(ScheduledPoint.new("s1", [[t0, 1], [t0+6, 2], [t0+30,1]]))
 
 #pp facilities
 

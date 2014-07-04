@@ -4,7 +4,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @facilities = facilities
 
     @area_lock = {} # area -> nil | owner_route
-    @switch_lock = {} # switch -> nil | [owner_route, ...]
+    @point_lock = {} # point -> nil | [owner_route, ...]
 
     @closed_loop_watch = {} # status_name -> [watchee_device_name, watchee_status_name]
     @closed_loop_output = {} # status_name -> [value, id, stable]
@@ -16,11 +16,11 @@ class Railway::Interlocking < FSEvent::AbstractDevice
   end
 
   def registered
-    @facilities.switch.each_key {|switch|
-      add_watch(switch, "position")
+    @facilities.point.each_key {|point|
+      add_watch(point, "position")
     }
-    @facilities.switch.each_key {|switch|
-      define_closed_loop_status(switch, nil, switch, switch)
+    @facilities.point.each_key {|point|
+      define_closed_loop_status(point, nil, point, point)
     }
     @facilities.route_segments.each_key {|signal|
       add_watch("panel", signal)
@@ -87,15 +87,15 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       railtype = @facilities.railtype[rail]
       case railtype
       when :track
-      when :switch
+      when :point
         unless watched_status.has_key?(rail) && watched_status[rail][rail]
           return nil
         end
         output_position = refer_closed_loop_status(rail)
-        desired_position = @facilities.switch_position(rail, n1, n2)
-        if @switch_lock[rail] == nil || @switch_lock[rail].empty?
+        desired_position = @facilities.point_position(rail, n1, n2)
+        if @point_lock[rail] == nil || @point_lock[rail].empty?
           lock_procs << lambda {
-            @switch_lock[rail] = [route]
+            @point_lock[rail] = [route]
           }
           if output_position != desired_position
             lock_procs << lambda {
@@ -104,7 +104,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
           end
         elsif output_position == desired_position
           lock_procs << lambda {
-            @switch_lock[rail] << route
+            @point_lock[rail] << route
           }
         else
           return nil
@@ -123,7 +123,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       case railtype
       when :track
         true
-      when :switch
+      when :point
         closed_loop_stable?(rail)
       else
         raise "unexpected rail type: #{railtype} for #{rail.inspect}"
@@ -151,8 +151,8 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       railtype = @facilities.railtype[rail]
       case railtype
       when :track
-      when :switch
-        @switch_lock[rail].delete route
+      when :point
+        @point_lock[rail].delete route
       else
         raise "unexpected rail type: #{railtype} for #{rail.inspect}"
       end

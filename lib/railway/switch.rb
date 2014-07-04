@@ -1,4 +1,4 @@
-class Railway::Switch < FSEvent::AbstractDevice
+class Railway::Point < FSEvent::AbstractDevice
   def initialize(device_name, initial_position, interlocking_name, status_name)
     super(device_name)
     @interlocking_name = interlocking_name

@@ -10,7 +10,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
   def run(watched_status, changed_status)
     #pp watched_status
     route = {}
-    switch = []
+    point = []
     train = []
     watched_status.each {|device_name, h|
       next if @name == device_name
@@ -25,8 +25,8 @@ class Railway::Dumper < FSEvent::AbstractDevice
       when /\Ar/
         route[device_name] ||= []
         route[device_name][0] = h["signal"]
-      when /\As/
-        switch << [device_name, h["position"]]
+      when /\Ap/
+        point << [device_name, h["position"]]
       when /\Atrain/
         position = h["position"]
         if !position.empty?
@@ -35,7 +35,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
       end
     }
     #p route
-    switch.sort!
+    point.sort!
     train.sort!
     str = @framework.current_time.to_s
     route.keys.sort.each {|route_name|
@@ -46,7 +46,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
         str << " #{route_name}:#{signal}(#{lever})"
       end
     }
-    switch.each {|device_name, position| str << " #{device_name}:#{position}" }
+    point.each {|device_name, position| str << " #{device_name}:#{position}" }
     train.each {|device_name, pos1, pos2| str << " #{device_name}:#{pos1}-#{pos2}" }
     puts str
     set_elapsed_time(0)
