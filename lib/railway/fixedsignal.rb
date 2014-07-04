@@ -1,4 +1,4 @@
-class Railway::Signal < FSEvent::AbstractDevice
+class Railway::FixedSignal < FSEvent::AbstractDevice
   def initialize(device_name, interlocking_name, status_name)
     super(device_name)
     @interlocking_name = interlocking_name
