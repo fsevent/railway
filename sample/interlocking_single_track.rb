@@ -19,6 +19,7 @@ panel_plan = [
 
 fse = FSEvent.new(t0)
 #fse.register_device(FSEvent::DebugDumper.new)
+fse.register_device(Railway::Dumper.new)
 fse.register_device(Railway::Circuit.new("circuit", facilities))
 fse.register_device(Railway::Interlocking.new("interlocking1", facilities))
 fse.register_device(FSEvent::ValueIdDevice2.new("vr1", "interlocking1", "r1"))

@@ -121,6 +121,7 @@ t0 = Time.utc(2000)
 
 fse = FSEvent.new(t0)
 #fse.register_device(FSEvent::DebugDumper.new)
+fse.register_device(Railway::Dumper.new)
 fse.register_device(train = Railway::Train.new("train1", 15, ["r2"], facilities))
 fse.register_device(Railway::Circuit.new("circuit", facilities))
 fse.register_device(ScheduledSignal.new("r2", [[t0, 0], [t0+7, 1], [t0+13,0]]))
