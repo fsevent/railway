@@ -41,62 +41,72 @@ class Railway::Interlocking < FSEvent::AbstractDevice
 
   def run_route(route, watched_status, changed_status)
     lever = watched_status.has_key?("panel") && watched_status["panel"][route]
-    if @route_state[route] == nil
-      if lever
-        lock_procs = route_lockable?(route, watched_status)
-        if lock_procs
-          lock_procs.each {|pr| pr.call }
-          @route_state[route] = :wait_allocation
+    done = false
+    until done
+      done = true
+      case @route_state[route]
+      when nil
+        if lever
+          lock_procs = route_lockable?(route, watched_status)
+          if lock_procs
+            lock_procs.each {|pr| pr.call }
+            @route_state[route] = :wait_allocation
+            done = false
+          end
         end
-      end
-    end
-    if @route_state[route] == :wait_allocation
-      if lever
-        if route_allocated?(route, watched_status)
-          modify_closed_loop_status(route, 1)
-          @route_state[route] = :signaled
-        end
-      else
-        route_unlock(route)
-        modify_closed_loop_status(route, 0)
-        @route_state[route] = nil
-      end
-    end
-    if @route_state[route] == :signaled
-      if lever
-        if train_in_route?(route, watched_status)
-          @route_state[route] = :entered
-          @unlocked_rear_numsegments[route] = 0
-          modify_closed_loop_status(route, 0)
-        end
-      else
-        if train_may_enter_route?(route, watched_status)
-          modify_closed_loop_status(route, 0)
-          @route_state[route] = :wait_approaching_train_stop
-          @route_schedule[route] = @framework.current_time + @facilities.approach_timer[route]
-          @schedule.merge_schedule [@route_schedule[route]]
+      when :wait_allocation
+        if lever
+          if route_allocated?(route, watched_status)
+            modify_closed_loop_status(route, 1)
+            @route_state[route] = :signaled
+            done = false
+          end
         else
           route_unlock(route)
           modify_closed_loop_status(route, 0)
           @route_state[route] = nil
+          done = false
         end
-      end
-    end
-    if @route_state[route] == :entered
-      if unlock_rear(route, watched_status)
-        @route_state[route] = :wait_deallocation
-      end
-    end
-    if @route_state[route] == :wait_deallocation
-      if signal_stable_stop?(route, watched_status)
-        @route_state[route] = nil
-      end
-    end
-    if @route_state[route] == :wait_approaching_train_stop
-      if @route_schedule[route] <= @framework.current_time
-        route_unlock(route)
-        @route_state[route] = nil
-        @route_schedule.delete route
+      when :signaled
+        if lever
+          if train_in_route?(route, watched_status)
+            @route_state[route] = :entered
+            @unlocked_rear_numsegments[route] = 0
+            modify_closed_loop_status(route, 0)
+            done = false
+          end
+        else
+          if train_may_enter_route?(route, watched_status)
+            modify_closed_loop_status(route, 0)
+            @route_state[route] = :wait_approaching_train_stop
+            @route_schedule[route] = @framework.current_time + @facilities.approach_timer[route]
+            @schedule.merge_schedule [@route_schedule[route]]
+          else
+            route_unlock(route)
+            modify_closed_loop_status(route, 0)
+            @route_state[route] = nil
+          end
+          done = false
+        end
+      when :entered
+        if unlock_rear(route, watched_status)
+          @route_state[route] = :wait_deallocation
+          done = false
+        end
+      when :wait_deallocation
+        if signal_stable_stop?(route, watched_status)
+          @route_state[route] = nil
+          done = false
+        end
+      when :wait_approaching_train_stop
+        if @route_schedule[route] <= @framework.current_time
+          route_unlock(route)
+          @route_state[route] = nil
+          @route_schedule.delete route
+          done = false
+        end
+      else
+        raise "unexpected route state: #{@route_state[route].inspect}"
       end
     end
   end
