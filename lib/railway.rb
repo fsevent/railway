@@ -8,7 +8,7 @@ end
 require 'railway/facilities'
 require 'railway/dumper'
 require 'railway/fixedsignal'
-require 'railway/switch'
+require 'railway/point'
 require 'railway/circuit'
 require 'railway/interlocking'
 require 'railway/panel'
