@@ -18,9 +18,6 @@ class Railway::Interlocking < FSEvent::AbstractDevice
 
   def registered
     @facilities.point.each_key {|point|
-      add_watch(point, "position")
-    }
-    @facilities.point.each_key {|point|
       define_closed_loop_status(point, nil, point, point)
     }
     @facilities.route_segments.each_key {|signal|
