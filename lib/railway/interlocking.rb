@@ -127,6 +127,13 @@ class Railway::Interlocking < FSEvent::AbstractDevice
   end
 
   def run_route_wait_approaching_train_stop(route, lever, watched_status)
+    if train_in_route?(route, watched_status)
+      @route_state[route] = :entered
+      @route_schedule[route] = nil
+      @unlocked_rear_numsegments[route] = 0
+      modify_closed_loop_status(route, 0)
+      return true
+    end
     if @route_schedule[route] <= @framework.current_time
       route_unlock(route)
       @route_state[route] = nil
