@@ -119,7 +119,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
   end
 
   def run_route_wait_deallocation(route, lever, watched_status)
-    if signal_stable_stop?(route, watched_status)
+    if signal_stop_confirmed?(route, watched_status)
       @route_state[route] = nil
       return true
     end
@@ -263,7 +263,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     segments.empty?
   end
 
-  def signal_stable_stop?(route, watched_status)
+  def signal_stop_confirmed?(route, watched_status)
     refer_closed_loop_status(route) == 0 && closed_loop_stable?(route)
   end
 
