@@ -33,7 +33,7 @@ class Railway::Train < FSEvent::AbstractDevice
         return
       end
       next_route = @plan.first
-      signal_device = next_route
+      signal_device = @facilities.route_to_signal(next_route)
       if !watched_status.has_key?(signal_device) ||
          !watched_status[signal_device].has_key?("signal")
         return
@@ -45,7 +45,7 @@ class Railway::Train < FSEvent::AbstractDevice
         return
       end
       @rails_until_next_route = @facilities.route_segments[next_route].dup
-      del_watch_signal(next_route)
+      del_watch_signal(@facilities.route_to_signal(next_route))
       @plan.shift
       if !@plan.empty?
         next_route = @plan.first
@@ -116,7 +116,7 @@ class Railway::Train < FSEvent::AbstractDevice
   end
 
   def add_watch_route(route)
-    add_watch(route, "signal", :schedule)
+    add_watch(@facilities.route_to_signal(route), "signal", :schedule)
     @facilities.route_segments[route].each {|segment|
       n1, n2, rail = segment
       case @facilities.railtype[rail]
@@ -130,8 +130,8 @@ class Railway::Train < FSEvent::AbstractDevice
     }
   end
 
-  def del_watch_signal(route)
-    del_watch(route, "signal")
+  def del_watch_signal(signal)
+    del_watch(signal, "signal")
   end
 
   def del_watch_segment(segment)

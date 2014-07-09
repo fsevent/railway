@@ -7,8 +7,8 @@ class Railway::Panel < FSEvent::AbstractDevice
   end
 
   def registered
-    @facilities.route_segments.each_key {|signal|
-      define_status(signal, false)
+    @facilities.each_route_name {|route_name|
+      define_status(route_name, false)
     }
     set_elapsed_time(0)
     set_next_schedule

@@ -151,4 +151,25 @@ class Railway::Facilities
     each_point_segment(&block)
   end
 
+  def each_route_name(&b)
+    @route_segments.each_key(&b)
+  end
+
+  def route_to_signal(route)
+    route.sub(/\Ar/, 's')
+  end
+
+  def each_route_and_fixedsignal_name
+    each_route_name {|rn|
+      yield rn, route_to_signal(rn)
+      #yield rn, rn
+    }
+  end
+
+  def each_fixedsignal_name
+    each_route_and_fixedsignal_name {|rn, sn|
+      yield sn
+    }
+  end
+
 end

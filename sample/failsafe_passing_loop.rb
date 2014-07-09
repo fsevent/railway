@@ -69,10 +69,10 @@ facilities.point.each_key {|point|
   fse.register_device(Railway::Point.new(point, 1, "v#{point}", point))
 }
 
-facilities.route_segments.each_key {|route|
-  fse.register_device(Railway::SaferSignal.new("safer_#{route}", route, *interlocking_list))
-  fse.register_device(FSEvent::ValueIdDevice2.new("v#{route}", "safer_#{route}", route))
-  fse.register_device(Railway::FixedSignal.new(route, "v#{route}", route))
+facilities.each_fixedsignal_name {|signal|
+  fse.register_device(Railway::SaferSignal.new("safer_#{signal}", signal, *interlocking_list))
+  fse.register_device(FSEvent::ValueIdDevice2.new("v#{signal}", "safer_#{signal}", signal))
+  fse.register_device(Railway::FixedSignal.new(signal, "v#{signal}", signal))
 }
 
 fse.register_device(Railway::Train.new("train1", 15, ["r1", "r2", "r4"], facilities))

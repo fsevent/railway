@@ -62,9 +62,9 @@ facilities.point.each_key {|point|
   fse.register_device(Railway::Point.new(point, 1, "v#{point}", point))
 }
 
-facilities.route_segments.each_key {|route|
-  fse.register_device(FSEvent::ValueIdDevice2.new("v#{route}", "interlocking1", route))
-  fse.register_device(Railway::FixedSignal.new(route, "v#{route}", route))
+facilities.each_fixedsignal_name {|signal|
+  fse.register_device(FSEvent::ValueIdDevice2.new("v#{signal}", "interlocking1", signal))
+  fse.register_device(Railway::FixedSignal.new(signal, "v#{signal}", signal))
 }
 
 fse.register_device(Railway::Train.new("train1", 15, ["r1", "r2", "r4"], facilities))

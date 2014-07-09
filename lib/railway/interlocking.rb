@@ -20,8 +20,8 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @facilities.point.each_key {|point|
       define_closed_loop_status(point, nil, point, point)
     }
-    @facilities.route_segments.each_key {|signal|
-      add_watch("panel", signal)
+    @facilities.each_route_and_fixedsignal_name {|route, signal|
+      add_watch("panel", route)
       define_closed_loop_status(signal, 0, signal, signal)
     }
     @facilities.circuit.values.uniq.each {|circuit|
@@ -31,34 +31,34 @@ class Railway::Interlocking < FSEvent::AbstractDevice
 
   def run(watched_status, changed_status)
     propagate_closed_loop_status(watched_status)
-    @facilities.route_segments.each_key {|signal|
-      run_route(signal, watched_status, changed_status)
+    @facilities.each_route_and_fixedsignal_name {|route, signal|
+      run_route(route, signal, watched_status, changed_status)
     }
   end
 
-  def run_route(route, watched_status, changed_status)
+  def run_route(route, signal, watched_status, changed_status)
     lever = watched_status.has_key?("panel") && watched_status["panel"][route]
     begin
       case @route_state[route]
       when nil
-        more = run_route_default(route, lever, watched_status)
+        more = run_route_default(route, signal, lever, watched_status)
       when :wait_allocation
-        more = run_route_wait_allocation(route, lever, watched_status)
+        more = run_route_wait_allocation(route, signal, lever, watched_status)
       when :signaled
-        more = run_route_signaled(route, lever, watched_status)
+        more = run_route_signaled(route, signal, lever, watched_status)
       when :entered
-        more = run_route_entered(route, lever, watched_status)
+        more = run_route_entered(route, signal, lever, watched_status)
       when :wait_deallocation
-        more = run_route_wait_deallocation(route, lever, watched_status)
+        more = run_route_wait_deallocation(route, signal, lever, watched_status)
       when :wait_approaching_train_stop
-        more = run_route_wait_approaching_train_stop(route, lever, watched_status)
+        more = run_route_wait_approaching_train_stop(route, signal, lever, watched_status)
       else
         raise "unexpected route state: #{@route_state[route].inspect}"
       end
     end while more
   end
 
-  def run_route_default(route, lever, watched_status)
+  def run_route_default(route, signal, lever, watched_status)
     if lever
       lock_procs = route_lockable?(route, watched_status)
       if lock_procs
@@ -70,39 +70,39 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     false
   end
 
-  def run_route_wait_allocation(route, lever, watched_status)
+  def run_route_wait_allocation(route, signal, lever, watched_status)
     if lever
       if route_allocated?(route, watched_status)
-        modify_closed_loop_status(route, 1)
+        modify_closed_loop_status(signal, 1)
         @route_state[route] = :signaled
         return true
       end
     else
       route_unlock(route)
-      modify_closed_loop_status(route, 0)
+      modify_closed_loop_status(signal, 0)
       @route_state[route] = nil
       return true
     end
     false
   end
 
-  def run_route_signaled(route, lever, watched_status)
+  def run_route_signaled(route, signal, lever, watched_status)
     if lever
       if train_in_route?(route, watched_status)
         @route_state[route] = :entered
         @unlocked_rear_numsegments[route] = 0
-        modify_closed_loop_status(route, 0)
+        modify_closed_loop_status(signal, 0)
         return true
       end
     else
       if train_may_enter_route?(route, watched_status)
-        modify_closed_loop_status(route, 0)
+        modify_closed_loop_status(signal, 0)
         @route_state[route] = :wait_approaching_train_stop
         @route_schedule[route] = @framework.current_time + @facilities.approach_timer[route]
         @schedule.merge_schedule [@route_schedule[route]]
       else
         route_unlock(route)
-        modify_closed_loop_status(route, 0)
+        modify_closed_loop_status(signal, 0)
         @route_state[route] = nil
       end
       return true
@@ -110,7 +110,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     false
   end
 
-  def run_route_entered(route, lever, watched_status)
+  def run_route_entered(route, signal, lever, watched_status)
     if unlock_rear(route, watched_status)
       @route_state[route] = :wait_deallocation
       return true
@@ -118,20 +118,20 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     false
   end
 
-  def run_route_wait_deallocation(route, lever, watched_status)
-    if signal_stop_confirmed?(route, watched_status)
+  def run_route_wait_deallocation(route, signal, lever, watched_status)
+    if signal_stop_confirmed?(signal, watched_status)
       @route_state[route] = nil
       return true
     end
     false
   end
 
-  def run_route_wait_approaching_train_stop(route, lever, watched_status)
+  def run_route_wait_approaching_train_stop(route, signal, lever, watched_status)
     if train_in_route?(route, watched_status)
       @route_state[route] = :entered
       @route_schedule[route] = nil
       @unlocked_rear_numsegments[route] = 0
-      modify_closed_loop_status(route, 0)
+      modify_closed_loop_status(signal, 0)
       return true
     end
     if @route_schedule[route] <= @framework.current_time
@@ -263,8 +263,8 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     segments.empty?
   end
 
-  def signal_stop_confirmed?(route, watched_status)
-    refer_closed_loop_status(route) == 0 && closed_loop_stable?(route)
+  def signal_stop_confirmed?(signal, watched_status)
+    refer_closed_loop_status(signal) == 0 && closed_loop_stable?(signal)
   end
 
   def define_closed_loop_status(status_name, value, watchee_device_name, watchee_status_name)

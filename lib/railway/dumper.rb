@@ -24,9 +24,9 @@ class Railway::Dumper < FSEvent::AbstractDevice
             route[status_name][1] = value ? 1 : 0
           end
         }
-      when /\Ar/
-        route[device_name] ||= []
-        route[device_name][0] = h["signal"]
+      when /\As[0-9]/
+        route[signal_to_route(device_name)] ||= []
+        route[signal_to_route(device_name)][0] = h["signal"]
       when /\Ap/
         point << [device_name, h["position"]]
       when /\Atrain/
@@ -36,7 +36,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
         end
       when /\Ainterlocking/
         h.each {|status_name, value|
-          if /\A[rp]/ =~ status_name
+          if /\A[sp]/ =~ status_name
             interlocking[status_name] ||= {}
             interlocking[status_name][device_name] = value
           end
@@ -69,4 +69,9 @@ class Railway::Dumper < FSEvent::AbstractDevice
     puts str
     set_elapsed_time(0)
   end
+
+  def signal_to_route(route)
+    route.sub(/\As/, 'r')
+  end
+
 end
