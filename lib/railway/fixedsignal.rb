@@ -11,7 +11,6 @@ class Railway::FixedSignal < FSEvent::AbstractDevice
 
   def registered
     define_status(@name, @current_signal)
-    define_status("signal", @current_signal[0])
     add_watch(@interlocking_name, @status_name)
   end
 
@@ -20,7 +19,6 @@ class Railway::FixedSignal < FSEvent::AbstractDevice
       if @current_signal != watched_status[@interlocking_name][@status_name]
         @current_signal = watched_status[@interlocking_name][@status_name]
         modify_status(@name, @current_signal)
-        modify_status("signal", @current_signal[0])
       end
     end
     set_elapsed_time(0.1)

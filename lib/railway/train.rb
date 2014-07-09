@@ -35,10 +35,10 @@ class Railway::Train < FSEvent::AbstractDevice
       next_route = @plan.first
       signal_device = @facilities.route_to_signal(next_route)
       if !watched_status.has_key?(signal_device) ||
-         !watched_status[signal_device].has_key?("signal")
+         !watched_status[signal_device].has_key?(signal_device)
         return
       end
-      signal = watched_status[signal_device]["signal"]
+      signal = watched_status[signal_device][signal_device][0] # the value element of value-id-stable tuple.
       if signal == 0
         clear_rear
         modify_status "position", @current_position.dup
@@ -82,12 +82,13 @@ class Railway::Train < FSEvent::AbstractDevice
         unless watched_status.has_key? rail
           raise "no point device defined: point #{rail}"
         end
-        unless watched_status[rail].has_key? "position"
+        unless watched_status[rail].has_key? rail
           raise "no point position status defined: point #{rail}"
         end
         expected_point_position = @facilities.point_position(rail, n1, n2)
-        if watched_status[rail]["position"] != expected_point_position
-          raise "derailment occur: #{rail} should be position #{expected_point_position} but #{watched_status[rail]["position"]}"
+        current_point_position = watched_status[rail][rail][0] # the value element of value-id-stable tuple.
+        if current_point_position != expected_point_position
+          raise "derailment occur: #{rail} should be position #{expected_point_position} but #{current_point_position}"
         end
       else
         raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
@@ -116,14 +117,15 @@ class Railway::Train < FSEvent::AbstractDevice
   end
 
   def add_watch_route(route)
-    add_watch(@facilities.route_to_signal(route), "signal", :schedule)
+    signal = @facilities.route_to_signal(route)
+    add_watch(signal, signal, :schedule)
     @facilities.route_segments[route].each {|segment|
       n1, n2, rail = segment
       case @facilities.railtype[rail]
       when :track
         # no moving parts for a track.
       when :point
-        add_watch(rail, "position", :immediate) # :immediate to detect derailments immediately.
+        add_watch(rail, rail, :immediate) # :immediate to detect derailments immediately.
       else
         raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
       end
@@ -131,7 +133,7 @@ class Railway::Train < FSEvent::AbstractDevice
   end
 
   def del_watch_signal(signal)
-    del_watch(signal, "signal")
+    del_watch(signal, signal)
   end
 
   def del_watch_segment(segment)
@@ -140,7 +142,7 @@ class Railway::Train < FSEvent::AbstractDevice
     when :track
       # no moving parts for a track.
     when :point
-      del_watch(rail, "position")
+      del_watch(rail, rail)
     else
       raise "unexpected rail type #{@facilities.railtype[rail].inspect} for #{rail.inspect}"
     end

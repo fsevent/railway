@@ -17,7 +17,6 @@ class Railway::Point < FSEvent::AbstractDevice
 
   def registered
     define_status(@name, @current_position)
-    define_status("position", @current_position[0])
     add_watch(@interlocking_name, @status_name)
   end
 
@@ -27,7 +26,6 @@ class Railway::Point < FSEvent::AbstractDevice
         return
       else
         modify_status(@name, @current_position)
-        modify_status("position", @current_position[0])
         @time_to_finish_moving = nil
       end
     end
@@ -37,13 +35,11 @@ class Railway::Point < FSEvent::AbstractDevice
         if requested_position[0] != @current_position[0]
           @current_position = requested_position.dup
           modify_status(@name, [-@current_position[0], nil, nil])
-          modify_status("position", -@current_position[0])
           @time_to_finish_moving = @framework.current_time + 5
           @schedule.merge_schedule [@time_to_finish_moving]
         else
           @current_position = requested_position.dup
           modify_status(@name, @current_position)
-          modify_status("position", @current_position[0])
         end
       end
     end

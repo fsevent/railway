@@ -25,7 +25,7 @@ facilities.each_segment {|rail, segment|
 
 class GreenSignal < FSEvent::AbstractDevice
   def registered
-    define_status("signal", 1) # "1" means green.
+    define_status(@name, 1) # "1" means green.
   end
 
   def run(watched_status, changed_status)
@@ -39,7 +39,7 @@ class FixedPoint < FSEvent::AbstractDevice
   end
 
   def registered
-    define_status("position", @position)
+    define_status(@name, [@position, nil, nil])
   end
 
   def run(watched_status, changed_status)
@@ -61,10 +61,10 @@ class ScheduledSignal < FSEvent::AbstractDevice
   def run(watched_status, changed_status)
     while !@plan.empty? && @plan[0][0] <= @framework.current_time
       if @first
-        define_status("signal", @plan[0][1])
+        define_status(@name, [@plan[0][1], nil, nil])
         @first = false
       else
-        modify_status("signal", @plan[0][1])
+        modify_status(@name, [@plan[0][1], nil, nil])
       end
       @plan.shift
     end
@@ -87,10 +87,10 @@ class RawScheduledPoint < FSEvent::AbstractDevice
   def run(watched_status, changed_status)
     while !@plan.empty? && @plan[0][0] <= @framework.current_time
       if @first
-        define_status("position", @plan[0][1])
+        define_status(@name, [@plan[0][1], nil, nil])
         @first = false
       else
-        modify_status("position", @plan[0][1])
+        modify_status(@name, [@plan[0][1], nil, nil])
       end
       @plan.shift
     end
