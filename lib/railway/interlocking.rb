@@ -1,4 +1,6 @@
 class Railway::Interlocking < FSEvent::AbstractDevice
+  include FSEvent::ValueIdDevice2::ClosedLoopStatus
+
   def initialize(device_name, facilities)
     super device_name
     @facilities = facilities
@@ -265,45 +267,6 @@ class Railway::Interlocking < FSEvent::AbstractDevice
 
   def signal_stop_confirmed?(signal, watched_status)
     refer_closed_loop_status(signal) == 0 && closed_loop_stable?(signal)
-  end
-
-  def define_closed_loop_status(status_name, value, watchee_device_name, watchee_status_name)
-    @closed_loop_watch[status_name] = [watchee_device_name, watchee_status_name]
-    @closed_loop_output[status_name] = [value, nil, nil]
-    add_watch(watchee_device_name, watchee_status_name)
-    define_status(status_name, @closed_loop_output[status_name])
-  end
-
-  def modify_closed_loop_status(status_name, value)
-    if @closed_loop_output[status_name][0] != value
-      @closed_loop_output[status_name] = [value, nil, nil]
-      modify_status(status_name, @closed_loop_output[status_name])
-    end
-  end
-
-  def refer_closed_loop_status(status_name)
-    @closed_loop_output[status_name][0]
-  end
-
-  def closed_loop_stable?(status_name)
-    @closed_loop_output[status_name][2]
-  end
-
-  def propagate_closed_loop_status(watched_status)
-    @closed_loop_watch.each {|status_name, (watchee_device_name, watchee_status_name)|
-      if watched_status.has_key?(watchee_device_name) && watched_status[watchee_device_name][watchee_status_name]
-        input_tuple = watched_status[watchee_device_name][watchee_status_name]
-        output_tuple = @closed_loop_output[status_name]
-        if input_tuple != output_tuple
-          input_value, = input_tuple
-          output_value, = output_tuple
-          if input_value == output_value
-            @closed_loop_output[status_name] = input_tuple
-            modify_status(status_name, @closed_loop_output[status_name])
-          end
-        end
-      end
-    }
   end
 
 end
