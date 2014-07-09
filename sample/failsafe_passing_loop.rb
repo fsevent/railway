@@ -64,14 +64,14 @@ interlocking_list = []
 }
 
 facilities.point.each_key {|point|
-  fse.register_device(Railway::SaferPoint.new("s#{point}", point, *interlocking_list))
-  fse.register_device(FSEvent::ValueIdDevice2.new("v#{point}", "s#{point}", point))
+  fse.register_device(Railway::SaferPoint.new("safer_#{point}", point, *interlocking_list))
+  fse.register_device(FSEvent::ValueIdDevice2.new("v#{point}", "safer_#{point}", point))
   fse.register_device(Railway::Point.new(point, 1, "v#{point}", point))
 }
 
 facilities.route_segments.each_key {|route|
-  fse.register_device(Railway::SaferSignal.new("s#{route}", route, *interlocking_list))
-  fse.register_device(FSEvent::ValueIdDevice2.new("v#{route}", "s#{route}", route))
+  fse.register_device(Railway::SaferSignal.new("safer_#{route}", route, *interlocking_list))
+  fse.register_device(FSEvent::ValueIdDevice2.new("v#{route}", "safer_#{route}", route))
   fse.register_device(Railway::FixedSignal.new(route, "v#{route}", route))
 }
 
