@@ -52,6 +52,8 @@ class Railway::Interlocking < FSEvent::AbstractDevice
         more = run_route_entered(route, signal, lever, watched_status)
       when :wait_deallocation
         more = run_route_wait_deallocation(route, signal, lever, watched_status)
+      when :wait_stop_signal
+        more = run_route_wait_stop_signal(route, signal, lever, watched_status)
       when :wait_approaching_train_stop
         more = run_route_wait_approaching_train_stop(route, signal, lever, watched_status)
       else
@@ -99,9 +101,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     else
       if train_may_enter_route?(route, watched_status)
         modify_closed_loop_status(signal, 0)
-        @route_state[route] = :wait_approaching_train_stop
-        @route_schedule[route] = @framework.current_time + @facilities.approach_timer[route]
-        @schedule.merge_schedule [@route_schedule[route]]
+        @route_state[route] = :wait_stop_signal
       else
         route_unlock(route)
         modify_closed_loop_status(signal, 0)
@@ -126,6 +126,15 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       return true
     end
     false
+  end
+
+  def run_route_wait_stop_signal(route, signal, lever, watched_status)
+    if signal_stop_confirmed?(signal, watched_status)
+      @route_state[route] = :wait_approaching_train_stop
+      @route_schedule[route] = @framework.current_time + @facilities.approach_timer[route]
+      @schedule.merge_schedule [@route_schedule[route]]
+      return true
+    end
   end
 
   def run_route_wait_approaching_train_stop(route, signal, lever, watched_status)
