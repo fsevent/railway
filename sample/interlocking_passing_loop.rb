@@ -2,16 +2,16 @@ require 'railway'
 
 facilities = Railway::Facilities.new
 
-# n1 --- n2 - s1 - n3 --- n4
+# n1 --- n2 - p1 - n3 --- n4
 #              \           \
-#               n8 --- n7 - s2 - n6 --- n5
+#               n8 --- n7 - p2 - n6 --- n5
 #
 # r1: n1 - n2
-# r2: n2 -s1- n3 - n4
-# r4: n4 -s2- n7 - n8
+# r2: n2 -p1- n3 - n4
+# r4: n4 -p2- n7 - n8
 # r5: n5 - n6
-# r6: n6 -s2- n7 - n8
-# r8: n8 -s1- n2 - n1
+# r6: n6 -p2- n7 - n8
+# r8: n8 -p1- n2 - n1
 
 facilities.add_track "t1", "n1", "n2", 200
 facilities.add_point "p1", "n2", ["n3", 5], ["n8", 5]
