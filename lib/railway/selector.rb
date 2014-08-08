@@ -1,6 +1,5 @@
 class Railway::Selector < FSEvent::AbstractDevice
   def initialize(device_name, output_status_names, *inputs)
-    p [output_status_names, *inputs]
     super device_name
     @output_status_names = output_status_names
     @inputs = inputs # [[soundness_list, status_list], ...]
