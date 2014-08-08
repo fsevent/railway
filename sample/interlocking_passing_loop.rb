@@ -54,7 +54,7 @@ fse = FSEvent.new(t0)
 #fse.register_device(FSEvent::DebugDumper.new)
 fse.register_device(Railway::Dumper.new)
 fse.register_device(Railway::Panel.new("panel", facilities, panel_plan))
-fse.register_device(Railway::Interlocking.new("interlocking1", facilities))
+fse.register_device(Railway::Interlocking.new("interlocking1", "panel", "circuit", facilities))
 fse.register_device(Railway::Circuit.new("circuit", facilities))
 
 facilities.point.each_key {|point|

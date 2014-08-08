@@ -1,8 +1,12 @@
 class Railway::Interlocking < FSEvent::AbstractDevice
   include FSEvent::ValueIdDevice2::ClosedLoopStatus
 
-  def initialize(device_name, facilities)
+  def initialize(device_name, panel_name, circuit_name, facilities)
     super device_name
+
+    @panel_name = panel_name
+    @circuit_name = circuit_name
+
     @facilities = facilities
 
     @area_lock = {} # area -> nil | owner_route
@@ -23,11 +27,11 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       define_closed_loop_status(point, nil, point, point)
     }
     @facilities.each_route_and_fixedsignal_name {|route, signal|
-      add_watch("panel", route)
+      add_watch(@panel_name, route)
       define_closed_loop_status(signal, 0, signal, signal)
     }
     @facilities.circuit.values.uniq.each {|circuit|
-      add_watch("circuit", circuit)
+      add_watch(@circuit_name, circuit)
     }
   end
 
@@ -39,7 +43,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
   end
 
   def run_route(route, signal, watched_status, changed_status)
-    lever = watched_status.has_key?("panel") && watched_status["panel"][route]
+    lever = watched_status.has_key?(@panel_name) && watched_status[@panel_name][route]
     begin
       case @route_state[route]
       when nil
@@ -246,21 +250,21 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     end
     @facilities.approach_segments[route].any? {|segment|
       circuit = @facilities.circuit[segment]
-      watched_status["circuit"][circuit]
+      watched_status[@circuit_name][circuit]
     }
   end
 
   def train_in_route?(route, watched_status)
     @facilities.route_segments[route].any? {|segment|
       circuit = @facilities.circuit[segment]
-      watched_status["circuit"][circuit]
+      watched_status[@circuit_name][circuit]
     }
   end
 
   def unlock_rear(route, watched_status)
     segments = @facilities.route_segments[route]
     segments = segments[@unlocked_rear_numsegments[route]..-1]
-    while !segments.empty? && !watched_status["circuit"][@facilities.circuit[segments.first]]
+    while !segments.empty? && !watched_status[@circuit_name][@facilities.circuit[segments.first]]
       segment = segments.shift
       @unlocked_rear_numsegments[route] += 1
       @facilities.area[segment].each {|area|

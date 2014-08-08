@@ -63,7 +63,7 @@ selector_inputs = []
   interlocking_list = []
   %w[a b].each {|i|
     interlocking = "interlocking_#{j}_#{i}"
-    fse.register_device(Railway::Interlocking.new(interlocking, facilities))
+    fse.register_device(Railway::Interlocking.new(interlocking, "panel", "circuit", facilities))
     interlocking_list << interlocking
   }
 

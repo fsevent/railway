@@ -59,7 +59,7 @@ fse.register_device(Railway::Circuit.new("circuit", facilities))
 interlocking_list = []
 2.times {|i|
   interlocking = "interlocking#{i+1}"
-  fse.register_device(Railway::Interlocking.new(interlocking, facilities))
+  fse.register_device(Railway::Interlocking.new(interlocking, "panel", "circuit", facilities))
   interlocking_list << interlocking
 }
 
