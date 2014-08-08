@@ -1,4 +1,4 @@
-class Railway::SaferSignal < FSEvent::AbstractDevice
+class Railway::SignalCmp < FSEvent::AbstractDevice
   def initialize(device_name, status_name, *input_device_names)
     super device_name
     @status_name = status_name
