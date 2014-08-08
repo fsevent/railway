@@ -25,6 +25,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
           end
         }
       when /\As[0-9]/
+        next if !h[device_name]
         route[signal_to_route(device_name)] ||= []
         route[signal_to_route(device_name)][0] = h[device_name][0]
       when /\Ap/

@@ -67,7 +67,7 @@ selector_inputs = []
     interlocking_list << interlocking
   }
 
-  selector_input_soundness_list = []
+  selector_input_soundness_list = [] # xxx: not implemented yet.
   selector_input_status_list = []
 
   facilities.point.each_key {|point|

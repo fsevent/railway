@@ -13,6 +13,7 @@ require 'railway/point'
 require 'railway/pointcmp'
 require 'railway/circuit'
 require 'railway/interlocking'
+require 'railway/selector'
 require 'railway/panel'
 require 'railway/train'
 
