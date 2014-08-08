@@ -33,7 +33,7 @@ class Railway::Selector < FSEvent::AbstractDevice
     @inputs.each_with_index {|(soundness_list, status_list), i|
       s = true
       soundness_list.each {|device_name, status_name|
-        s &&= watched_status.has_key?(device_name) && watched_status[device_name].has_key?(status_name) && watched_status[device_name]
+        s &&= watched_status.has_key?(device_name) && watched_status[device_name].has_key?(status_name) && watched_status[device_name][status_name]
         break if !s
       }
       soundness[i] = s
