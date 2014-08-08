@@ -6,6 +6,7 @@ class Railway::SignalCmp < FSEvent::AbstractDevice
     if input_device_names.empty?
       raise "no input devices for #{device_name}"
     end
+    @soundness = false
   end
 
   def registered
@@ -14,6 +15,7 @@ class Railway::SignalCmp < FSEvent::AbstractDevice
     @input_device_names.each {|input_device_name|
       add_watch(input_device_name, @status_name)
     }
+    define_status("soundness", @soundness)
   end
 
   def run(watched_status, changed_status)
@@ -24,6 +26,16 @@ class Railway::SignalCmp < FSEvent::AbstractDevice
       if output != @output
         @output = output
         modify_status(@status_name, @output)
+      end
+      unanimous = @input_device_names.map {|input_device_name| watched_status[input_device_name][@status_name][0] }.uniq.length == 1
+      if unanimous
+        soundness = true
+      else
+        soundness = false
+      end
+      if @soundness != soundness
+        modify_status("soundness", soundness)
+        @soundness = soundness
       end
     end
   end
