@@ -35,7 +35,8 @@ class Railway::Train < FSEvent::AbstractDevice
       next_route = @plan.first
       signal_device = @facilities.route_to_signal(next_route)
       if !watched_status.has_key?(signal_device) ||
-         !watched_status[signal_device].has_key?(signal_device)
+         !watched_status[signal_device].has_key?(signal_device) ||
+         watched_status[signal_device][signal_device] == nil
         return
       end
       signal = watched_status[signal_device][signal_device][0] # the value element of value-id-stable tuple.
