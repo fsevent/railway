@@ -64,13 +64,13 @@ interlocking_list = []
 }
 
 facilities.point.each_key {|point|
-  fse.register_device(Railway::PointCmp.new("cmp_#{point}", point, *interlocking_list))
+  fse.register_device(Railway::PointCmp.new("cmp_#{point}", point, interlocking_list))
   fse.register_device(FSEvent::ValueIdDevice2.new("v#{point}", "cmp_#{point}", point))
   fse.register_device(Railway::Point.new(point, 1, "v#{point}", point))
 }
 
 facilities.each_fixedsignal_name {|signal|
-  fse.register_device(Railway::SignalCmp.new("cmp_#{signal}", signal, *interlocking_list))
+  fse.register_device(Railway::SignalCmp.new("cmp_#{signal}", signal, interlocking_list))
   fse.register_device(FSEvent::ValueIdDevice2.new("v#{signal}", "cmp_#{signal}", signal))
   fse.register_device(Railway::FixedSignal.new(signal, "v#{signal}", signal))
 }
