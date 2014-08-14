@@ -1,7 +1,7 @@
 class Railway::Interlocking < FSEvent::AbstractDevice
   include FSEvent::ValueIdDevice2::ClosedLoopStatus
 
-  def initialize(device_name, panel_name, circuit_name, facilities)
+  def initialize(device_name, panel_name, circuit_name, facilities, latch_name=nil)
     super device_name
 
     @panel_name = panel_name
@@ -19,20 +19,25 @@ class Railway::Interlocking < FSEvent::AbstractDevice
                       # state = nil | :wait_allocation | :signaled | :entered | :wait_deallocation
     @route_schedule = {}
 
+    @latch = latch_name
+
     @unlocked_rear_numsegments = {} # route -> integer
   end
 
   def registered
     @facilities.point.each_key {|point|
-      define_closed_loop_status(point, nil, point, point)
+      define_closed_loop_status(point, nil, @latch||point, point)
     }
     @facilities.each_route_and_fixedsignal_name {|route, signal|
       add_watch(@panel_name, route)
-      define_closed_loop_status(signal, 0, signal, signal)
+      define_closed_loop_status(signal, 0, @latch||signal, signal)
     }
     @facilities.circuit.values.uniq.each {|circuit|
       add_watch(@circuit_name, circuit)
     }
+    if @latch
+      add_watch(@latch, "count")
+    end
   end
 
   def run(watched_status, changed_status)
@@ -177,7 +182,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
       case railtype
       when :track
       when :point
-        unless watched_status.has_key?(rail) && watched_status[rail][rail]
+        unless watched_status.has_key?(@latch||rail) && watched_status[@latch||rail][rail]
           return nil
         end
         output_position = refer_closed_loop_status(rail)
