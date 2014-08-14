@@ -8,7 +8,7 @@ class Railway::PointCmp < FSEvent::AbstractDevice
     end
     @count_status_name = count_status_name
     @count_mismatch_max = 2 # second
-    @soundness = false
+    @soundness = nil
   end
 
   def registered
