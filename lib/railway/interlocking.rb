@@ -37,6 +37,7 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     }
     if @latch
       add_watch(@latch, "count")
+      define_status("count", nil)
     end
   end
 
@@ -45,6 +46,9 @@ class Railway::Interlocking < FSEvent::AbstractDevice
     @facilities.each_route_and_fixedsignal_name {|route, signal|
       run_route(route, signal, watched_status, changed_status)
     }
+    if @latch
+      modify_status("count", watched_status[@latch]["count"])
+    end
   end
 
   def run_route(route, signal, watched_status, changed_status)
