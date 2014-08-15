@@ -36,6 +36,7 @@ class Railway::Cmp < FSEvent::AbstractDevice
       else
         if !@count_mismatch_limit
           @count_mismatch_limit = @framework.current_time + @count_mismatch_max
+          @schedule.merge_schedule [@count_mismatch_limit]
         elsif @count_mismatch_limit < @framework.current_time
           soundness = false
           if @soundness != soundness
