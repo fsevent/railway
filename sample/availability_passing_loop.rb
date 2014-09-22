@@ -72,15 +72,13 @@ selector_inputs = []
 
   facilities.point.each_key {|point|
     fse.register_device(Railway::Cmp.new("cmp_#{j}_#{point}", point, interlocking_list))
-    fse.register_device(FSEvent::ValueIdDevice2.new("v_#{j}_#{point}", "cmp_#{j}_#{point}", point))
-    selector_input_status_list << ["v_#{j}_#{point}", point]
+    selector_input_status_list << ["cmp_#{j}_#{point}", point]
     selector_input_soundness_list << ["cmp_#{j}_#{point}", "soundness"]
   }
 
   facilities.each_fixedsignal_name {|signal|
     fse.register_device(Railway::Cmp.new("cmp_#{j}_#{signal}", signal, interlocking_list))
-    fse.register_device(FSEvent::ValueIdDevice2.new("v_#{j}_#{signal}", "cmp_#{j}_#{signal}", signal))
-    selector_input_status_list << ["v_#{j}_#{signal}", signal]
+    selector_input_status_list << ["cmp_#{j}_#{signal}", signal]
     selector_input_soundness_list << ["cmp_#{j}_#{signal}", "soundness"]
   }
 
@@ -98,11 +96,13 @@ facilities.each_fixedsignal_name {|signal|
 fse.register_device(Railway::Selector.new("selector", selector_output_status_names, *selector_inputs))
 
 facilities.point.each_key {|point|
-  fse.register_device(Railway::Point.new(point, 1, "selector", point))
+  fse.register_device(FSEvent::ValueIdDevice2.new("v_#{point}", "selector", point))
+  fse.register_device(Railway::Point.new(point, 1, "v_#{point}", point))
 }
 
 facilities.each_fixedsignal_name {|signal|
-  fse.register_device(Railway::FixedSignal.new(signal, "selector", signal))
+  fse.register_device(FSEvent::ValueIdDevice2.new("v_#{signal}", "selector", signal))
+  fse.register_device(Railway::FixedSignal.new(signal, "v_#{signal}", signal))
 }
 
 fse.register_device(Railway::Train.new("train1", 15, ["r1", "r2", "r4"], facilities))
