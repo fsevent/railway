@@ -67,19 +67,16 @@ selector_inputs = []
     interlocking_list << interlocking
   }
 
-  selector_input_soundness_list = []
   selector_input_status_list = []
 
   facilities.point.each_key {|point|
     fse.register_device(Railway::Cmp.new("cmp_#{j}_#{point}", point, interlocking_list))
     selector_input_status_list << ["cmp_#{j}_#{point}", point]
-    selector_input_soundness_list << ["cmp_#{j}_#{point}", "soundness"]
   }
 
   facilities.each_fixedsignal_name {|signal|
     fse.register_device(Railway::Cmp.new("cmp_#{j}_#{signal}", signal, interlocking_list))
     selector_input_status_list << ["cmp_#{j}_#{signal}", signal]
-    selector_input_soundness_list << ["cmp_#{j}_#{signal}", "soundness"]
   }
 
   selector_inputs << selector_input_status_list
