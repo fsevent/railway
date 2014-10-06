@@ -82,7 +82,7 @@ selector_inputs = []
     selector_input_soundness_list << ["cmp_#{j}_#{signal}", "soundness"]
   }
 
-  selector_inputs << [selector_input_soundness_list, selector_input_status_list]
+  selector_inputs << selector_input_status_list
 }
 
 selector_output_status_names = []

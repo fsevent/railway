@@ -2,11 +2,10 @@ class Railway::Selector < FSEvent::AbstractDevice
   def initialize(device_name, output_status_names, *inputs)
     super device_name
     @output_status_names = output_status_names
-    @inputs = inputs # [[soundness_list, status_list], ...]
-                     # soundness_list = [[device_name, status_name], ...]
+    @inputs = inputs # [status_list, ...]
                      # status_list = [[device_name, status_name], ...]
                      # where output_status_names.length == status_list.length
-    @inputs.each {|soundness_list, status_list|
+    @inputs.each {|status_list|
       if output_status_names.length != status_list.length
         raise "number of status unmatch"
       end
@@ -18,10 +17,7 @@ class Railway::Selector < FSEvent::AbstractDevice
     @output_status_names.each {|status_name|
       define_status(status_name, [:init, nil, nil])
     }
-    @inputs.each {|soundness_list, status_list|
-      soundness_list.each {|device_name, status_name|
-        add_watch(device_name, status_name)
-      }
+    @inputs.each {|status_list|
       status_list.each {|device_name, status_name|
         add_watch(device_name, status_name)
       }
@@ -30,13 +26,12 @@ class Railway::Selector < FSEvent::AbstractDevice
 
   def run(watched_status, changed_status)
     soundness = []
-    @inputs.each_with_index {|(soundness_list, status_list), i|
+    @inputs.each_with_index {|status_list, i|
       s = true
-      soundness_list.each {|device_name, status_name|
+      status_list.each {|device_name, status_name|
         return if !watched_status.has_key?(device_name)
         return if !watched_status[device_name].has_key?(status_name)
-        return if watched_status[device_name][status_name] == nil
-        s &&= watched_status[device_name][status_name]
+        s &&= watched_status[device_name][status_name][0] != :broken
         break if !s
       }
       soundness[i] = s
@@ -45,7 +40,7 @@ class Railway::Selector < FSEvent::AbstractDevice
       while !soundness[@current]
         @current = (@current + 1) % soundness.length
       end
-      soundness_list, status_list = @inputs[@current]
+      status_list = @inputs[@current]
       @output_status_names.each_with_index {|output_status_name, i|
         input_device_name, input_status_name = status_list[i]
         modify_status(output_status_name, watched_status[input_device_name][input_status_name])
