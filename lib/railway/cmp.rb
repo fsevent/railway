@@ -8,7 +8,6 @@ class Railway::Cmp < FSEvent::AbstractDevice
     end
     @count_status_name = count_status_name
     @count_mismatch_max = 2 # second
-    @soundness = nil
   end
 
   def registered
@@ -21,20 +20,12 @@ class Railway::Cmp < FSEvent::AbstractDevice
       end
     }
     @count_mismatch_limit = @framework.current_time + @count_mismatch_max
-    define_status("soundness", @soundness)
   end
 
   def update_output(output)
     if @output != output
       modify_status(@status_name, output)
       @output = output
-    end
-  end
-
-  def update_soundness(soundness)
-    if @soundness != soundness
-      modify_status("soundness", soundness)
-      @soundness = soundness
     end
   end
 
@@ -54,7 +45,6 @@ class Railway::Cmp < FSEvent::AbstractDevice
           @schedule.merge_schedule [@count_mismatch_limit]
         elsif @count_mismatch_limit <= @framework.current_time
           update_output([:broken, nil, nil])
-          update_soundness(false)
         end
         return # count mismatch.
       end
@@ -69,13 +59,10 @@ class Railway::Cmp < FSEvent::AbstractDevice
     if unanimous
       safest_input_device = @input_device_names[0] # all inputs should be same.
       output = watched_status[safest_input_device][@status_name]
-      soundness = true
     else
       output = [:broken, nil, nil]
-      soundness = false
     end
     update_output(output)
-    update_soundness(soundness)
   end
 end
 

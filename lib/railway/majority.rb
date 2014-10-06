@@ -10,7 +10,6 @@ class Railway::Majority < FSEvent::AbstractDevice
     @minimum_num_devices = 2
     @count_status_name = count_status_name
     @count_mismatch_max = 2 # second
-    @soundness = nil
   end
 
   def registered
@@ -23,7 +22,6 @@ class Railway::Majority < FSEvent::AbstractDevice
       end
     }
     @count_mismatch_limit = @framework.current_time + @count_mismatch_max
-    define_status("soundness", @soundness)
   end
 
   def check_count(watched_status, changed_status)
@@ -56,11 +54,7 @@ class Railway::Majority < FSEvent::AbstractDevice
       count_list[0...-2] = []
     end
     if @input_devce_names.length < 2
-      soundness = false
-      if @soundness != soundness
-        modify_status("soundness", soundness)
-        @soundness = soundness
-      end
+      update_output([:broken, nil, nil])
       return
     end
     if count_list.length == 2
@@ -98,11 +92,7 @@ class Railway::Majority < FSEvent::AbstractDevice
       value_list[0...-2] = []
     end
     if @input_device_names.length < 2
-      soundness = false
-      if @soundness != soundness
-        modify_status("soundness", soundness)
-        @soundness = soundness
-      end
+      update_output([:broken, nil, nil])
       return
     end
     if value_list.length == 2
@@ -119,6 +109,13 @@ class Railway::Majority < FSEvent::AbstractDevice
     return value1_devices
   end
 
+  def update_output(output)
+    if @output != output
+      modify_status(@status_name, output)
+      @output = output
+    end
+  end
+
   def run(watched_status, changed_status)
     if @count_status_name
       input_device_names = check_count(watched_status, changed_status)
@@ -133,10 +130,7 @@ class Railway::Majority < FSEvent::AbstractDevice
       return
     end
     output = watched_status[input_device_names.first][@status_name]
-    if output != @output
-      @output = output
-      modify_status(@status_name, @output)
-    end
+    update_output(output)
   end
 end
 
