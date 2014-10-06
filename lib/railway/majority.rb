@@ -14,7 +14,7 @@ class Railway::Majority < FSEvent::AbstractDevice
   end
 
   def registered
-    @output = nil
+    @output = [:init, nil, nil]
     define_status(@status_name, @output)
     @input_device_names.each {|input_device_name|
       add_watch(input_device_name, @status_name)

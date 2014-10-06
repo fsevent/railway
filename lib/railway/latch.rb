@@ -15,8 +15,8 @@ class Railway::Latch < FSEvent::AbstractDevice
     @current_output = {}
     @inputs.each {|device_name, status_name|
       add_watch(device_name, status_name)
-      define_status(status_name, nil)
-      @current_output[status_name] = nil
+      @current_output[status_name] = [:init, nil, nil]
+      define_status(status_name, @current_output[status_name])
     }
     @delay_limit = nil
   end

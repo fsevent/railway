@@ -29,7 +29,10 @@ class Railway::Point < FSEvent::AbstractDevice
         @time_to_finish_moving = nil
       end
     end
-    if watched_status[@interlocking_name].has_key?(@status_name) && watched_status[@interlocking_name][@status_name] != nil
+    if watched_status[@interlocking_name].has_key?(@status_name) &&
+       watched_status[@interlocking_name][@status_name] != nil &&
+       watched_status[@interlocking_name][@status_name][0] != :init &&
+       watched_status[@interlocking_name][@status_name][0] != :broken
       requested_position = watched_status[@interlocking_name][@status_name]
       if requested_position[0] != nil && requested_position != @current_position
         if requested_position[0] != @current_position[0]

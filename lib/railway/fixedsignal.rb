@@ -17,7 +17,13 @@ class Railway::FixedSignal < FSEvent::AbstractDevice
   def run(watched_status, changed_status)
     if watched_status[@interlocking_name].has_key?(@status_name)
       if @current_signal != watched_status[@interlocking_name][@status_name]
-        @current_signal = watched_status[@interlocking_name][@status_name]
+        if watched_status[@interlocking_name][@status_name] == nil ||
+           watched_status[@interlocking_name][@status_name][0] == :init
+           watched_status[@interlocking_name][@status_name][0] == :broken
+          @current_signal = [0, nil, nil]
+        else
+          @current_signal = watched_status[@interlocking_name][@status_name]
+        end
         modify_status(@name, @current_signal)
       end
     end

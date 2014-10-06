@@ -16,7 +16,7 @@ class Railway::Selector < FSEvent::AbstractDevice
 
   def registered
     @output_status_names.each {|status_name|
-      define_status(status_name, nil)
+      define_status(status_name, [:init, nil, nil])
     }
     @inputs.each {|soundness_list, status_list|
       soundness_list.each {|device_name, status_name|
