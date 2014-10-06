@@ -76,7 +76,7 @@ class Railway::Majority < FSEvent::AbstractDevice
   def check_value(input_device_names, watched_status, changed_status)
     if @input_device_names.any? {|input_device_name| !watched_status.has_key?(input_device_name) ||
                                                      !watched_status[input_device_name].has_key?(@status_name) ||
-                                                     watched_status[input_device_name][@status_name] == nil }
+                                                     watched_status[input_device_name][@status_name][0] == :init }
       return
     end
     value_hash = {}
