@@ -9,6 +9,7 @@ class FSEvent::ValueIdDevice2 < FSEvent::AbstractDevice
   end
 
   def registered
+    define_status(@status_name, [:init, nil, nil])
     add_watch @src_device_name, @status_name, :immediate
   end
 
@@ -17,7 +18,7 @@ class FSEvent::ValueIdDevice2 < FSEvent::AbstractDevice
       value, id, stable = watched_status[@src_device_name][@status_name]
       if !@defined
         @id += 1
-        define_status(@status_name, [value, @id, false])
+        modify_status(@status_name, [value, @id, false])
         @defined = true
         @old_value = value
       else
@@ -32,9 +33,9 @@ class FSEvent::ValueIdDevice2 < FSEvent::AbstractDevice
     else
       if @defined
         @id += 1
-        undefine_status(@status_name)
         @defined = false
         @old_value = nil
+        modify_status(@status_name, [:broken, @id, true])
       end
     end
   end
