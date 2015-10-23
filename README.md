@@ -22,6 +22,11 @@ ruby -Ilib sample/determinstic_passing_loop.rb
 
 Tanaka Akira
 
+# acknowledgments
+
+This program is developed in a joint research project by
+AIST, JR east and JR west in 2014.
+
 # License
 GPLv3 or later
 
