@@ -1,6 +1,9 @@
 # fsevent-railway
 
-railway simulater using fsevent
+railway simulater using fsevent.
+
+This program is developed experimentally in a research.
+It is not assumed to be used for real railway systems.
 
 # install
 
@@ -18,4 +21,7 @@ ruby -Ilib sample/determinstic_passing_loop.rb
 # author
 
 Tanaka Akira
+
+# License
+GPLv3 or later
 
