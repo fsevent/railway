@@ -25,7 +25,7 @@ Tanaka Akira
 # acknowledgments
 
 This program is developed in a joint research project by
-AIST, JR east and JR west in 2014.
+AIST, JR East and JR West in 2014.
 
 # License
 GPLv3 or later
