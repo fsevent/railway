@@ -79,14 +79,14 @@ class Railway::Tube
 
     # the nearest point in ap1 to ap2.  nil if it is outside of ap1 to ap2.
     ap0 = nil
-    if 0 <= numa && numa <= al * den
+    if 0 < numa && numa < al * den
       da = numa / den
       ap0 = ap1 + an * da
     end
 
     # the nearest point in bp1 to bp2.  nil if it is outside of bp1 to bp2.
     bp0 = nil
-    if 0 <= numb && numb <= bl * den
+    if 0 < numb && numb < bl * den
       db = numb / den
       bp0 = bp1 + bn * db
     end
