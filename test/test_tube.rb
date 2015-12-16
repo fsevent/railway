@@ -8,13 +8,29 @@ require 'railway/tube'
 
 class TestRailwayTube < Test::Unit::TestCase
   def assert_interfere(tube1, tube2, message=nil)
+    tube1x = Railway::Tube.new(tube1.pos2, tube1.pos1, tube1.radius)
+    tube2x = Railway::Tube.new(tube2.pos2, tube2.pos1, tube2.radius)
     assert_true(tube1.interfere?(tube2), message)
     assert_true(tube2.interfere?(tube1), message)
+    assert_true(tube1.interfere?(tube2x), message)
+    assert_true(tube2.interfere?(tube1x), message)
+    assert_true(tube1x.interfere?(tube2), message)
+    assert_true(tube2x.interfere?(tube1), message)
+    assert_true(tube1x.interfere?(tube2x), message)
+    assert_true(tube2x.interfere?(tube1x), message)
   end
 
   def assert_not_interfere(tube1, tube2, message=nil)
+    tube1x = Railway::Tube.new(tube1.pos2, tube1.pos1, tube1.radius)
+    tube2x = Railway::Tube.new(tube2.pos2, tube2.pos1, tube2.radius)
     assert_false(tube1.interfere?(tube2), message)
     assert_false(tube2.interfere?(tube1), message)
+    assert_false(tube1.interfere?(tube2x), message)
+    assert_false(tube2.interfere?(tube1x), message)
+    assert_false(tube1x.interfere?(tube2), message)
+    assert_false(tube2x.interfere?(tube1), message)
+    assert_false(tube1x.interfere?(tube2x), message)
+    assert_false(tube2x.interfere?(tube1x), message)
   end
 
   def test_interfere_bounding_box
