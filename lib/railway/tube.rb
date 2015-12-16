@@ -63,11 +63,6 @@ class Railway::Tube
 
     # not parallel
 
-    # doesn't intefere if the nearest points are far enough.
-    n /= nl
-    h = n.dot(ap1-bp1).abs
-    return false if ar_br < h
-
     al = av.r
     bl = bv.r
 
@@ -79,24 +74,26 @@ class Railway::Tube
     den = 1 - anbn ** 2
 
     ap1_bp1 = (ap1 - bp1)
-    da = (ap1_bp1.dot(bn) * anbn - ap1_bp1.dot(an)) / den
-    db = (- ap1_bp1.dot(an) * anbn + ap1_bp1.dot(bn)) / den
+    numa = ap1_bp1.dot(bn) * anbn - ap1_bp1.dot(an)
+    numb = -ap1_bp1.dot(an) * anbn + ap1_bp1.dot(bn)
 
     # the nearest point in ap1 to ap2.  nil if it is outside of ap1 to ap2.
     ap0 = nil
-    if 0 <= da && da <= al
+    if 0 <= numa && numa <= al * den
+      da = numa / den
       ap0 = ap1 + an * da
     end
 
     # the nearest point in bp1 to bp2.  nil if it is outside of bp1 to bp2.
     bp0 = nil
-    if 0 <= db && db <= bl
+    if 0 <= numb && numb <= bl * den
+      db = numb / den
       bp0 = bp1 + bn * db
     end
 
     if ap0 && bp0
-      # interfere.  the nearest points are near enough because h <= ar_br.
-      return true
+      # interfere if the nearest points are near enough.
+      return true if (ap0 - bp0).r <= ar_br
     end
     if bp0
       # interfere if the nearest point is interfer tip spheres on the other line.
