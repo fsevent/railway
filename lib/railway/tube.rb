@@ -40,37 +40,27 @@ class Railway::Tube
     av = ap2 - ap1
     bv = bp2 - bp1
 
-    n = av.cross(bv)
-    nl = n.r
-    if nl == 0.0 # xxx: dangerous to test equality of float numbers.
-      # parallel
-      ap1_bp1 = (ap1 - bp1)
-      bn = bv.normalize
-      hv = ap1_bp1.cross(bn)
-      h = hv.r
-      # doesn't intefere if parallel lines are far enough.
-      return false if ar_br < h
-      d1 = bn.dot(ap1_bp1)
-      d2 = bn.dot(ap2 - bp1)
-      # doesn't intefere if parallel line segments are slid. (condition 1)
-      return false if d1 < 0 && d2 < 0
-      bl = bv.r
-      # doesn't intefere if parallel line segments are slid. (condition 2)
-      return false if bl < d1 && bl < d2
-      # interfere otherwise.
-      return true
-    end
-
-    # not parallel
-
     al = av.r
     bl = bv.r
 
     an = av.normalize
     bn = bv.normalize
 
+    # interfere if the nearest point to a line is near enough.
+    # this condition works well for parallel or near parallel lines.
+    da = (an.dot(bp1-ap1))
+    return true if 0 < da && da < al && (bp1 - (ap1 + an * da)).r <= ar_br
+    da = (an.dot(bp2-ap1))
+    return true if 0 < da && da < al && (bp2 - (ap1 + an * da)).r <= ar_br
+    db = (bn.dot(ap1-bp1))
+    return true if 0 < db && db < bl && (ap1 - (bp1 + bn * db)).r <= ar_br
+    db = (bn.dot(ap2-bp1))
+    return true if 0 < db && db < bl && (ap2 - (bp1 + bn * db)).r <= ar_br
+
     anbn = an.dot(bn)
 
+    # den will be 0 if the two lines are parallel.
+    # So, following condition may not work well for (near) parallel lines.
     den = 1 - anbn ** 2
 
     ap1_bp1 = (ap1 - bp1)

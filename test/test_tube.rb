@@ -51,9 +51,15 @@ class TestRailwayTube < Test::Unit::TestCase
     assert_not_interfere(tube1, tube2)
   end
 
-  def test_interfere_parallel_near
+  def test_interfere_parallel_near_parallelogram
     tube1 = Railway::Tube.new(Vector[0,0,0], Vector[10,10,0], 2)
     tube2 = Railway::Tube.new(Vector[5,8,0], Vector[15,18,0], 2)
+    assert_interfere(tube1, tube2)
+  end
+
+  def test_interfere_parallel_near_trapezoid
+    tube1 = Railway::Tube.new(Vector[0,0,0], Vector[10,10,0], 2)
+    tube2 = Railway::Tube.new(Vector[-15,-12,0], Vector[15,18,0], 2)
     assert_interfere(tube1, tube2)
   end
 
