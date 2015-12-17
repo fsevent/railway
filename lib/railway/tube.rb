@@ -47,7 +47,7 @@ class Railway::Tube
     bn = bv.normalize
 
     # interfere if the nearest point to a line is near enough.
-    # this condition works well for parallel or near parallel lines.
+    # This condition works well for (near) parallel lines.
     da = (an.dot(bp1-ap1))
     return true if 0 < da && da < al && (bp1 - (ap1 + an * da)).r <= ar_br
     da = (an.dot(bp2-ap1))
@@ -57,10 +57,9 @@ class Railway::Tube
     db = (bn.dot(ap2-bp1))
     return true if 0 < db && db < bl && (ap2 - (bp1 + bn * db)).r <= ar_br
 
-    anbn = an.dot(bn)
-
     # den will be 0 if the two lines are parallel.
-    # So, following condition may not work well for (near) parallel lines.
+    # So, following conditions may not work well for (near) parallel lines.
+    anbn = an.dot(bn)
     den = 1 - anbn ** 2
 
     ap1_bp1 = (ap1 - bp1)
