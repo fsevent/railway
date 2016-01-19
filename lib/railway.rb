@@ -22,6 +22,7 @@ require 'railway/valueid2'
 module Railway
 end
 
+require 'railway/tube'
 require 'railway/facilities'
 require 'railway/dumper'
 require 'railway/fixedsignal'
@@ -34,4 +35,9 @@ require 'railway/latch'
 require 'railway/selector'
 require 'railway/panel'
 require 'railway/train'
+
+require 'railway/mb_facilities'
+require 'railway/mb_panel'
+require 'railway/mb_interlocking'
+require 'railway/mb_train'
 

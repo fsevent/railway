@@ -6,12 +6,21 @@ class Railway::Tube
   # pos1 : Vector of three numbers
   # pos2 : Vector of three numbers
   # radius : positive number
-  def initialize(pos1, pos2, radius)
+  def initialize(pos1, pos2, radius, comment=nil)
     @pos1 = pos1.map(&:to_f)
     @pos2 = pos2.map(&:to_f)
     @radius = radius.to_f
+    @comment = comment
   end
   attr_reader :pos1, :pos2, :radius
+
+  def inspect
+    if @comment
+      "\#<#{self.class}: #{@comment} [#{@pos1[0]},#{@pos1[1]},#{@pos1[2]}]-[#{@pos2[0]},#{@pos2[1]},#{@pos2[2]}] #{radius}>"
+    else
+      "\#<#{self.class}: [#{@pos1[0]},#{@pos1[1]},#{@pos1[2]}]-[#{@pos2[0]},#{@pos2[1]},#{@pos2[2]}] #{radius}>"
+    end
+  end
 
   def bounding_box
     [@pos1.map2(@pos2) {|*pair| pair.min - @radius },
@@ -99,5 +108,9 @@ class Railway::Tube
 
     # doesn't interfere otherwise.
     return false
+  end
+
+  def requestable?
+    false
   end
 end

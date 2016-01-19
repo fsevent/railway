@@ -49,7 +49,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
         point << [device_name, h[device_name][0]]
       when /\Atrain/
         position = h["position"]
-        if !position.empty?
+        if position && !position.empty?
           train << [device_name, position[0][0], position[-1][1]]
         end
       when /\Ainterlocking/
