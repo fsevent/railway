@@ -47,14 +47,6 @@ facilities.add_track "t5", "n5", "n6"
 facilities.add_point "p2", "n6", "n7", "n4"
 facilities.add_track "t7", "n7", "n8"
 
-routes = {}
-routes["r1"] = [["n1", "n2", "t1"]]
-routes["r2"] = [["n2", "n3", "p1"], ["n3", "n4", "t3"]]
-routes["r4"] = [["n4", "n6", "p2"], ["n6", "n5", "t5"]]
-routes["r5"] = [["n5", "n6", "t5"]]
-routes["r6"] = [["n6", "n7", "p2"], ["n7", "n8", "t7"]]
-routes["r8"] = [["n8", "n2", "p1"], ["n2", "n1", "t1"]]
-
 t0 = Time.utc(2000)
 
 total_plan = [
