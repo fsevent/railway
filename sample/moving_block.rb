@@ -22,13 +22,6 @@ facilities = Railway::MbFacilities.new
 # n1 --- n2 - p1 - n3 --- n4
 #              \           \
 #               n8 --- n7 - p2 - n6 --- n5
-#
-# r1: n1 - n2
-# r2: n2 -p1- n3 - n4
-# r4: n4 -p2- n7 - n8
-# r5: n5 - n6
-# r6: n6 -p2- n7 - n8
-# r8: n8 -p1- n2 - n1
 
 facilities.add_node "n1", 0, 10
 facilities.add_node "n2", 200, 10
