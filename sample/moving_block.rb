@@ -33,12 +33,12 @@ facilities.add_node "n6", 410, 0
 facilities.add_node "n7", 405, 0
 facilities.add_node "n8", 205, 0
 
-facilities.add_track "t1", "n1", "n2"
-facilities.add_point "p1", "n2", "n3", "n8"
-facilities.add_track "t3", "n3", "n4"
-facilities.add_track "t5", "n5", "n6"
-facilities.add_point "p2", "n6", "n7", "n4"
-facilities.add_track "t7", "n7", "n8"
+#facilities.add_track "t1", "n1", "n2"
+#facilities.add_point "p1", "n2", "n3", "n8"
+#facilities.add_track "t3", "n3", "n4"
+#facilities.add_track "t5", "n5", "n6"
+#facilities.add_point "p2", "n6", "n7", "n4"
+#facilities.add_track "t7", "n7", "n8"
 
 t0 = Time.utc(2000)
 
