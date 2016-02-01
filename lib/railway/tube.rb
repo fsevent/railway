@@ -110,6 +110,18 @@ class Railway::Tube
     return false
   end
 
+  def interlocking_status
+    []
+  end
+
+  def part_states
+    []
+  end
+
+  def lockable?(watched_status)
+    true
+  end
+
   def requestable?
     false
   end

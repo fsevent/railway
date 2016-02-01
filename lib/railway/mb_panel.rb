@@ -38,10 +38,10 @@ class Railway::MbPanel < FSEvent::AbstractDevice
         define_status(train, [])
       end
       if lock_or_unlock
-        puts "#{@name}: #{train} lock #{res.inspect}"
+        puts "#{@framework.current_time} #{@name}: #{train} lock #{res.inspect}"
         @train_resources[train] |= [res]
       else
-        puts "#{@name}: #{train} unlock #{res.inspect}"
+        puts "#{@framework.current_time} #{@name}: #{train} unlock #{res.inspect}"
         @train_resources[train] -= [res]
       end
       modify_status(train, @train_resources[train])

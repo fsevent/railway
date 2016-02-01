@@ -23,6 +23,7 @@ module Railway
 end
 
 require 'railway/tube'
+require 'railway/partstate'
 require 'railway/facilities'
 require 'railway/dumper'
 require 'railway/fixedsignal'
@@ -39,5 +40,6 @@ require 'railway/train'
 require 'railway/mb_facilities'
 require 'railway/mb_panel'
 require 'railway/mb_interlocking'
+require 'railway/mb_point'
 require 'railway/mb_train'
 

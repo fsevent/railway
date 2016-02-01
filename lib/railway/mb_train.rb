@@ -51,7 +51,7 @@ class Railway::MbTrain < FSEvent::AbstractDevice
           interlocking_resources = watched_status[@interlocking_status[0]][@interlocking_status[1]]
           interlocking_locked = interlocking_resources.include? res
           if interlocking_locked
-            puts "#{@name}: lock #{res.inspect}"
+            puts "#{@framework.current_time} #{@name}: lock #{res.inspect}"
             @train_resources |= [res]
             modify_status @train, @train_resources.dup
             @plan.shift
@@ -61,7 +61,7 @@ class Railway::MbTrain < FSEvent::AbstractDevice
         unless @train_resources.include? res
           raise "should not happen"
         end
-        puts "#{@name}: unlock #{res.inspect}"
+        puts "#{@framework.current_time} #{@name}: unlock #{res.inspect}"
         @train_resources -= [res]
         modify_status @train, @train_resources.dup
         @plan.shift

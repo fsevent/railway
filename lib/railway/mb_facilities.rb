@@ -186,7 +186,7 @@ class Railway::MbFacilities
 
   def get_partstate(part, state)
     @partstates[part] ||= {}
-    @partstates[part][state] ||= Railway::PartState(part, state)
+    @partstates[part][state] ||= Railway::PartState.new(part, state)
     return @partstates[part][state]
   end
 

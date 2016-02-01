@@ -46,7 +46,7 @@ class Railway::Dumper < FSEvent::AbstractDevice
         route[signal_to_route(device_name)] ||= []
         route[signal_to_route(device_name)][0] = h[device_name][0]
       when /\Ap/
-        point << [device_name, h[device_name][0]]
+        point << [device_name, h[device_name]]
       when /\Atrain/
         position = h["position"]
         if position && !position.empty?
