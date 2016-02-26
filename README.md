@@ -9,13 +9,13 @@ It is not assumed to be used for real railway systems.
 
 ```
 gem install fsevent
-tar xf fsevent-railway-1.0.tar.gz
+tar xf fsevent-railway-2.0.tar.gz
 ```
 
 # run a sample program
 
 ```
-ruby -Ilib sample/determinstic_passing_loop.rb
+ruby -Ilib sample/moving_block.rb
 ```
 
 # author
@@ -24,7 +24,10 @@ Tanaka Akira
 
 # acknowledgments
 
-This program is developed in a joint research project by
+This program (version 2.0) is developed in a joint research project by
+AIST and JR East in 2015.
+
+This program (version 1.0) is developed in a joint research project by
 AIST, JR East and JR West in 2014.
 
 # License
