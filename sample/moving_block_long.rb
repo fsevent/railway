@@ -1,6 +1,6 @@
-# interlocking_passing_loop.rb --- passing sample without redundancy
+# moving_block_long.rb --- cascaded moving block control
 #
-# Copyright (C) 2014  National Institute of Advanced Industrial Science and Technology (AIST)
+# Copyright (C) 2016  National Institute of Advanced Industrial Science and Technology (AIST)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
