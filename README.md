@@ -26,11 +26,12 @@ Tanaka Akira
 
 This program (version 2.0) is developed in a joint research project by
 AIST and JR East in 2015.
+(AIST program administration number: H28PRO-1978)
 
 This program (version 1.0) is developed in a joint research project by
 AIST, JR East and JR West in 2014.
+(AIST program administration number: H27PRO-1899)
 
 # License
 GPLv3 or later
 
-(AIST program administration number: H27PRO-1899)
